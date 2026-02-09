@@ -11,6 +11,9 @@ struct MacroManagerView: View {
     // App Picker
     @State private var showAppPicker = false
     
+    // UI State
+    @State private var showSnippetLibrary = false
+    
     // Drag & Drop
     @State private var draggingMacro: Macro?
     
@@ -46,182 +49,247 @@ struct MacroManagerView: View {
             }
         } detail: {
             // MAIN CANVAS
-            // Look up the live profile from the manager to ensure we have the latest data
             if let selected = selectedProfile,
                let index = profileManager.profiles.firstIndex(where: { $0.id == selected.id }) {
-                
-                // Create a binding for convenience where needed, or access the manager directly
-                let profile = profileManager.profiles[index]
-                
-                ScrollView {
-                    VStack(spacing: 24) {
-                        // 1. TOP SECTION: LIVE PREVIEW
-                        VStack {
-                            Text("Live Preview")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            
-                            // We reuse RadialMenuView but pass a read-only or dummy action
-                            // Pass 'profile' (the one being edited) as the preview
-                            RadialMenuView(profileManager: profileManager, previewProfile: profile, onExecute: { _ in })
-                                .frame(width: 450, height: 450) // Increased from 300 to fit new 170pt radius
-                                .scaleEffect(0.8) // Scale down to fit in the UI nicely
-                                .background(Color.black.opacity(0.8)) // Dark preview background
-                                .cornerRadius(20)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 20)
-                                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                                )
-                                .environment(\.colorScheme, .dark) // Force dark mode for preview
-                        }
-                        .padding()
-                        
-                        Divider()
-                        
-                        // 2. PROFILE SETTINGS (Linked Apps)
-                        VStack(alignment: .leading) {
-                            HStack {
-                                Text("Linked Apps")
-                                    .font(.headline)
-                                Spacer()
-                                Button(action: { showAppPicker = true }) {
-                                    Label("Add App", systemImage: "plus")
-                                }
-                                .popover(isPresented: $showAppPicker) {
-                                    AppSelectionView { bundleId in
-                                        // Update the Live Profile directly
-                                        if !profileManager.profiles[index].associatedBundleIds.contains(bundleId) {
-                                            profileManager.profiles[index].associatedBundleIds.append(bundleId)
-                                        }
-                                        showAppPicker = false
-                                    }
-                                }
-                            }
-                            
-                            if profile.associatedBundleIds.isEmpty {
-                                Text("No apps linked. This profile will only be active when selected manually.")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            } else {
-                                LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))], spacing: 12) {
-                                    ForEach(profile.associatedBundleIds, id: \.self) { bundleId in
-                                        HStack {
-                                            if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) {
-                                                Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
-                                                    .resizable()
-                                                    .frame(width: 24, height: 24)
-                                            } else {
-                                                Image(systemName: "app")
-                                                    .frame(width: 24, height: 24)
-                                            }
-                                            
-                                            Text(nameForBundleId(bundleId))
-                                                .font(.caption)
-                                                .lineLimit(1)
-                                                .truncationMode(.tail)
-                                            
-                                            Spacer()
-                                            
-                                            Button(action: {
-                                                 profileManager.profiles[index].associatedBundleIds.removeAll(where: { $0 == bundleId })
-                                            }) {
-                                                Image(systemName: "xmark.circle.fill")
-                                                    .foregroundColor(.gray)
-                                            }
-                                            .buttonStyle(PlainButtonStyle())
-                                        }
-                                        .padding(8)
-                                        .background(Color.secondary.opacity(0.1))
-                                        .cornerRadius(8)
-                                    }
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
-
-                        Divider()
-                        
-                        // 3. BOTTOM SECTION: MACRO GRIDS
-                        VStack(alignment: .leading) {
-                            HStack {
-                                Text("Macros")
-                                    .font(.headline)
-                                Spacer()
-                                Button(action: {
-                                    let newMacro = Macro(
-                                        label: "New Macro",
-                                        type: .shellScript,
-                                        value: "echo 'Hello World'",
-                                        iconName: "star"
-                                    )
-                                    // Make sure we update the specific profile in the manager
-                                    withAnimation {
-                                        profileManager.profiles[index].macros.append(newMacro)
-                                    }
-                                }) {
-                                    Label("Add Macro", systemImage: "plus.circle.fill")
-                                        .font(.body.bold())
-                                }
-                                .buttonStyle(.borderedProminent) // Make it POP
-                            }
-                            .padding(.horizontal)
-                            
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 250))], spacing: 16) {
-                                ForEach($profileManager.profiles[index].macros) { $macro in
-                                    MacroConfigCard(macro: $macro)
-                                        .contextMenu {
-                                            Button(role: .destructive) {
-                                                if let mIndex = profileManager.profiles[index].macros.firstIndex(where: { $0.id == $macro.id }) {
-                                                    withAnimation {
-                                                        _ = profileManager.profiles[index].macros.remove(at: mIndex)
-                                                    }
-                                                }
-                                            } label: {
-                                                Label("Delete Macro", systemImage: "trash")
-                                            }
-                                        }
-                                        // Drag and Drop Logic
-                                        .onDrag {
-                                            self.draggingMacro = macro
-                                            return NSItemProvider(object: macro.id.uuidString as NSString)
-                                        }
-                                        .onDrop(of: [.text], delegate: MacroDragRelocateDelegate(item: macro, listData: $profileManager.profiles[index].macros, current: $draggingMacro))
-                                }
-                            }
-                            .padding()
-                        }
-                    }
-                    .padding(.bottom, 40)
-                }
-                .navigationTitle($profileManager.profiles[index].name) // Editable Title in Navbar (macOS 14+)? 
-                // Or just separate TextField. NavigationTitle binding is simplest if supported, but let's be safe.
-                .toolbar {
-                     ToolbarItem(placement: .principal) {
-                         TextField("Profile Name", text: $profileManager.profiles[index].name)
-                             .font(.headline)
-                             .frame(width: 200)
-                             .multilineTextAlignment(.center)
-                     }
-                    
-                    ToolbarItem(placement: .automatic) {
-                        Button(action: { showSyncAlert = true }) {
-                            Label("Sync", systemImage: "arrow.triangle.2.circlepath")
-                        }
-                    }
-                }
-                .alert("Sync Profiles", isPresented: $showSyncAlert) {
-                    TextField("URL", text: $syncURLString)
-                    Button("Cancel", role: .cancel) { }
-                    Button("Sync") {
-                        // Stub sync
-                        print("Syncing from \(syncURLString)...")
-                    }
-                }
+                profileDetailView(index: index)
             } else {
                 Text("Select a Profile to Edit")
                     .font(.title)
                     .foregroundColor(.secondary)
+            }
+        }
+        .inspector(isPresented: $showSnippetLibrary) {
+            SnippetLibraryView()
+                .frame(minWidth: 250)
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button(action: { showSnippetLibrary = false }) {
+                            Label("Close", systemImage: "sidebar.right")
+                        }
+                    }
+                }
+        }
+    }
+    
+    // Extracted detail view to reduce compiler complexity
+    @ViewBuilder
+    private func profileDetailView(index: Int) -> some View {
+        let profile = profileManager.profiles[index]
+        
+        ScrollView {
+            VStack(spacing: 24) {
+                // 1. TOP SECTION: LIVE PREVIEW
+                VStack {
+                    Text("Live Preview")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    RadialMenuView(profileManager: profileManager, previewProfile: profile, onExecute: { _ in })
+                        .frame(width: 450, height: 450)
+                        .scaleEffect(0.8)
+                        .background(Color.black.opacity(0.8))
+                        .cornerRadius(20)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        )
+                        .environment(\.colorScheme, .dark)
+                }
+                .padding()
+                
+                Divider()
+                
+                // 2. PROFILE SETTINGS
+                linkedAppsSection(profile: profile, index: index)
+                
+                Divider()
+                
+                // 3. MACROS GRID
+                macrosGridSection(index: index)
+            }
+            .padding(.bottom, 40)
+        }
+        .navigationTitle($profileManager.profiles[index].name)
+        .toolbar {
+             ToolbarItem(placement: .principal) {
+                 TextField("Profile Name", text: $profileManager.profiles[index].name)
+                     .font(.headline)
+                     .frame(width: 200)
+                     .multilineTextAlignment(.center)
+             }
+            
+            ToolbarItem(placement: .automatic) {
+                Button(action: { showSnippetLibrary.toggle() }) {
+                    Label("Snippets", systemImage: "curlybraces")
+                }
+            }
+
+            ToolbarItem(placement: .automatic) {
+                Button(action: { showSyncAlert = true }) {
+                    Label("Sync", systemImage: "arrow.triangle.2.circlepath")
+                }
+            }
+        }
+        .alert("Sync Profiles", isPresented: $showSyncAlert) {
+            TextField("URL", text: $syncURLString)
+            Button("Cancel", role: .cancel) { }
+            Button("Sync") {
+                print("Syncing from \(syncURLString)...")
+            }
+        }
+    }
+    
+    private func linkedAppsSection(profile: Profile, index: Int) -> some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Text("Linked Apps")
+                    .font(.headline)
+                Spacer()
+                Button(action: { showAppPicker = true }) {
+                    Label("Add App", systemImage: "plus")
+                }
+                .popover(isPresented: $showAppPicker) {
+                    AppSelectionView { bundleId in
+                        if !profileManager.profiles[index].associatedBundleIds.contains(bundleId) {
+                            profileManager.profiles[index].associatedBundleIds.append(bundleId)
+                        }
+                        showAppPicker = false
+                    }
+                }
+            }
+            
+            if profile.associatedBundleIds.isEmpty {
+                Text("No apps linked. This profile will only be active when selected manually.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            } else {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))], spacing: 12) {
+                    ForEach(profile.associatedBundleIds, id: \.self) { bundleId in
+                        HStack {
+                            if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) {
+                                Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+                                    .resizable()
+                                    .frame(width: 24, height: 24)
+                            } else {
+                                Image(systemName: "app")
+                                    .frame(width: 24, height: 24)
+                            }
+                            
+                            Text(nameForBundleId(bundleId))
+                                .font(.caption)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                            
+                            Spacer()
+                            
+                            Button(action: {
+                                    profileManager.profiles[index].associatedBundleIds.removeAll(where: { $0 == bundleId })
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.gray)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                        .padding(8)
+                        .background(Color.secondary.opacity(0.1))
+                        .cornerRadius(8)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal)
+    }
+
+    private func macrosGridSection(index: Int) -> some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Text("Macros")
+                    .font(.headline)
+                Spacer()
+                Button(action: {
+                    let newMacro = Macro(
+                        label: "New Macro",
+                        type: .shellScript,
+                        value: "echo 'Hello World'",
+                        iconName: "star"
+                    )
+                    withAnimation {
+                        profileManager.profiles[index].macros.append(newMacro)
+                    }
+                }) {
+                    Label("Add Macro", systemImage: "plus.circle.fill")
+                        .font(.body.bold())
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding(.horizontal)
+            
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 250))], spacing: 16) {
+                ForEach($profileManager.profiles[index].macros) { $macro in
+                    MacroConfigCard(macro: $macro)
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                if let mIndex = profileManager.profiles[index].macros.firstIndex(where: { $0.id == $macro.id }) {
+                                    withAnimation {
+                                        _ = profileManager.profiles[index].macros.remove(at: mIndex)
+                                    }
+                                }
+                            } label: {
+                                Label("Delete Macro", systemImage: "trash")
+                            }
+                        }
+                    // Drag and Drop Logic
+                        .onDrag {
+                            self.draggingMacro = macro
+                            return NSItemProvider(object: macro.id.uuidString as NSString)
+                        }
+                        .onDrop(of: [.text], delegate: MacroDragRelocateDelegate(item: macro, listData: $profileManager.profiles[index].macros, current: $draggingMacro))
+                }
+            }
+            .padding()
+            // Drop zone for Snippets
+            .onDrop(of: [.text], isTargeted: nil) { providers in
+                guard let first = providers.first else { return false }
+                _ = first.loadObject(ofClass: NSString.self) { string, error in
+                    DispatchQueue.main.async {
+                        guard let jsonString = string as? String else { return }
+                        
+                        // Try to parse as Snippet JSON
+                        if let data = jsonString.data(using: .utf8),
+                           let dict = try? JSONSerialization.jsonObject(with: data) as? [String: String],
+                           dict["type"] == "snippet",
+                           let name = dict["name"],
+                           let content = dict["content"] {
+                            
+                            if self.draggingMacro == nil {
+                                let newMacro = Macro(
+                                    label: name,
+                                    type: .text, // Requested: text/paste
+                                    value: content,
+                                    iconName: "doc.text.fill"
+                                )
+                                withAnimation {
+                                    profileManager.profiles[index].macros.append(newMacro)
+                                }
+                            }
+                        } else {
+                            // Fallback for raw text
+                            if self.draggingMacro == nil {
+                                let newMacro = Macro(
+                                    label: "New Text Macro",
+                                    type: .text,
+                                    value: jsonString,
+                                    iconName: "doc.text"
+                                )
+                                withAnimation {
+                                    profileManager.profiles[index].macros.append(newMacro)
+                                }
+                            }
+                        }
+                    }
+                }
+                return true
             }
         }
     }

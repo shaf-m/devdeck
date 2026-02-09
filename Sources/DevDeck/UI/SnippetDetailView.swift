@@ -8,6 +8,7 @@ struct SnippetDetailView: View {
     @State private var name: String
     @State private var language: String
     @State private var code: String
+    @State private var notes: String
     @State private var showDeleteConfirmation = false
     
     let languages = [
@@ -33,6 +34,7 @@ struct SnippetDetailView: View {
         _name = State(initialValue: snippet.name)
         _language = State(initialValue: snippet.language)
         _code = State(initialValue: snippet.content)
+        _notes = State(initialValue: snippet.notes)
     }
     
     var body: some View {
@@ -71,6 +73,10 @@ struct SnippetDetailView: View {
                         }
                     }
                     .pickerStyle(.menu)
+                    
+                    TextField("Notes", text: $notes, axis: .vertical)
+                        .lineLimit(2...4)
+                        .textFieldStyle(.roundedBorder)
                 }
                 
                 Section(header: Text("Code")) {
@@ -123,6 +129,11 @@ struct SnippetDetailView: View {
         // 2. Rename / Change Language
         if name != snippet.name || language != snippet.language {
             snippetManager.renameSnippet(snippet, newName: name, newLanguage: language)
+        }
+        
+        // 3. Update Notes
+        if notes != snippet.notes {
+            snippetManager.updateNotes(for: snippet, notes: notes)
         }
         
         dismiss()

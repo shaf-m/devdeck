@@ -7,6 +7,7 @@ struct SnippetCreationView: View {
     @State private var name: String = ""
     @State private var language: String = "sh"
     @State private var code: String = ""
+    @State private var notes: String = ""
     
     let languages = [
         ("Shell Script", "sh"),
@@ -23,7 +24,7 @@ struct SnippetCreationView: View {
         ("AppleScript", "applescript"),
         ("Plain Text", "txt")
     ]
-    
+
     var body: some View {
         VStack(spacing: 20) {
             Text("Create New Snippet")
@@ -41,12 +42,17 @@ struct SnippetCreationView: View {
                             HStack {
                                 LanguageIconView(language: lang.1)
                                     .frame(width: 16, height: 16)
+                                .foregroundColor(.primary)
                                 Text(lang.0)
                             }
                             .tag(lang.1)
                         }
                     }
                     .pickerStyle(.menu)
+                    
+                    TextField("Notes (Optional)", text: $notes, axis: .vertical)
+                        .lineLimit(2...4)
+                        .textFieldStyle(.roundedBorder)
                 }
                 
                 Section(header: Text("Code")) {
@@ -79,7 +85,7 @@ struct SnippetCreationView: View {
     }
     
     private func saveSnippet() {
-        snippetManager.createSnippet(name: name, content: code, language: language, folder: nil)
+        snippetManager.createSnippet(name: name, content: code, language: language, folder: nil, notes: notes)
         dismiss()
     }
 }

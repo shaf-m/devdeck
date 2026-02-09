@@ -21,6 +21,9 @@ struct MacroManagerView: View {
     @State private var showProfileDeleteConfirmation = false
     @State private var profileToDeleteIndex: IndexSet?
     
+    // Profile Renaming
+    @State private var isEditingProfileName = false
+    
     // Helper to get app name
     func nameForBundleId(_ bundleId: String) -> String {
         if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) {
@@ -159,12 +162,38 @@ struct MacroManagerView: View {
         }
         .navigationTitle($profileManager.profiles[index].name)
         .toolbar {
-             ToolbarItem(placement: .principal) {
-                 TextField("Profile Name", text: $profileManager.profiles[index].name)
-                     .font(.headline)
-                     .frame(width: 200)
-                     .multilineTextAlignment(.center)
-             }
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 8) {
+                        if isEditingProfileName {
+                            TextField("Profile Name", text: $profileManager.profiles[index].name)
+                                .font(.headline)
+                                .frame(width: 200)
+                                .multilineTextAlignment(.center)
+                                .textFieldStyle(.roundedBorder)
+                                .onSubmit {
+                                    isEditingProfileName = false
+                                }
+                            
+                            Button(action: { isEditingProfileName = false }) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.green)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Save Name")
+                        } else {
+                            Text(profileManager.profiles[index].name)
+                                .font(.headline)
+                                .fontWeight(.medium)
+                            
+                            Button(action: { isEditingProfileName = true }) {
+                                Image(systemName: "pencil")
+                                    .foregroundColor(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                            .help("Rename Profile")
+                        }
+                    }
+                }
             
             ToolbarItem(placement: .automatic) {
                 Button(action: { showSnippetLibrary.toggle() }) {
@@ -203,11 +232,24 @@ struct MacroManagerView: View {
                 Spacer()
                 
                 Button(action: { showAppPicker = true }) {
-                    Label("Link App", systemImage: "plus")
-                        .fontWeight(.medium)
+                    HStack {
+                        Image(systemName: "plus")
+                        Text("Link App")
+                    }
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .foregroundColor(.primary)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(8)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                    )
+                    .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
+                .buttonStyle(.plain)
                 .popover(isPresented: $showAppPicker) {
                     AppSelectionView { bundleId in
                         if !profileManager.profiles[index].associatedBundleIds.contains(bundleId) {
@@ -306,11 +348,26 @@ struct MacroManagerView: View {
                         profileManager.profiles[index].macros.append(newMacro)
                     }
                 }) {
-                    Label("Add Macro", systemImage: "plus")
-                        .fontWeight(.medium)
+                    HStack {
+                        Image(systemName: "plus")
+                        Text("Add Macro")
+                    }
+                    .font(.body)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(
+                        LinearGradient(
+                            colors: [.blue, .purple],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(10)
+                    .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+                .buttonStyle(.plain)
             }
             .padding(.horizontal)
             

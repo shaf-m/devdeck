@@ -9,6 +9,7 @@ struct Snippet: Identifiable, Codable, Hashable {
     var language: String { url.pathExtension }
     var isDirectory: Bool
     var isPinned: Bool = false
+    var notes: String = ""
     var children: [Snippet]? // For directories
 }
 
@@ -17,6 +18,9 @@ class SnippetManager: ObservableObject {
     
     private var pinnedSnippetIDs: Set<String> = []
     private let pinnedKey = "devdeck.pinnedSnippets"
+    
+    private var snippetNotes: [String: String] = [:]
+    private let notesKey = "devdeck.snippetNotes"
     
     // Base Directory: ~/.devdeck/snippets
     private var baseURL: URL? {
@@ -28,6 +32,9 @@ class SnippetManager: ObservableObject {
     init() {
         if let savedPins = UserDefaults.standard.array(forKey: pinnedKey) as? [String] {
             pinnedSnippetIDs = Set(savedPins)
+        }
+        if let savedNotes = UserDefaults.standard.dictionary(forKey: notesKey) as? [String: String] {
+            snippetNotes = savedNotes
         }
         createBaseDirectoryIfNeeded()
         loadSnippets()
@@ -69,7 +76,8 @@ class SnippetManager: ObservableObject {
             } else {
                 if let content = try? String(contentsOf: fileURL, encoding: .utf8) {
                     let isPinned = pinnedSnippetIDs.contains(fileURL.path)
-                    result.append(Snippet(url: fileURL, content: content, isDirectory: false, isPinned: isPinned, children: nil))
+                    let notes = snippetNotes[fileURL.path] ?? ""
+                    result.append(Snippet(url: fileURL, content: content, isDirectory: false, isPinned: isPinned, notes: notes, children: nil))
                 }
             }
         }
@@ -77,7 +85,7 @@ class SnippetManager: ObservableObject {
         return result.sorted { $0.name < $1.name }
     }
     
-    func createSnippet(name: String, content: String, language: String, folder: String?) {
+    func createSnippet(name: String, content: String, language: String, folder: String?, notes: String = "") {
         guard let baseURL = baseURL else { return }
         
         var targetDir = baseURL
@@ -93,6 +101,13 @@ class SnippetManager: ObservableObject {
         
         do {
             try content.write(to: fileURL, atomically: true, encoding: .utf8)
+            
+            // Save notes
+            if !notes.isEmpty {
+                snippetNotes[fileURL.path] = notes
+                UserDefaults.standard.set(snippetNotes, forKey: notesKey)
+            }
+            
             loadSnippets()
         } catch {
             print("Failed to save snippet: \(error)")
@@ -133,5 +148,15 @@ class SnippetManager: ObservableObject {
         }
         UserDefaults.standard.set(Array(pinnedSnippetIDs), forKey: pinnedKey)
         loadSnippets() // Reload to update UI state
+        loadSnippets() // Reload to update UI state
+    }
+    
+    func updateNotes(for snippet: Snippet, notes: String) {
+        snippetNotes[snippet.id] = notes
+        UserDefaults.standard.set(snippetNotes, forKey: notesKey)
+        // Update local object to reflect immediately if needed, or reload
+        if let index = snippets.firstIndex(where: { $0.id == snippet.id }) {
+            snippets[index].notes = notes
+        }
     }
 }

@@ -167,21 +167,35 @@ struct SnippetLibraryView: View {
             Divider()
             
             // Footer (Add Button)
-            HStack {
-                Spacer()
+            // Footer (Add Button)
+            VStack {
                 Button(action: {
                     showNewSnippetAlert = true
                 }) {
                     HStack {
-                        Image(systemName: "plus.circle.fill")
+                        Image(systemName: "curlybraces")
                         Text("Add Snippet")
                     }
                     .font(.headline)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(
+                        LinearGradient(
+                            colors: [.blue, .purple],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(12)
+                    .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                    .contentShape(Rectangle()) // Ensure tap area covers the whole button
                 }
-                .buttonStyle(BorderedProminentButtonStyle())
-                .padding()
+                .buttonStyle(.plain)
+                .padding(.horizontal)
+                .padding(.bottom, 16)
+                .padding(.top, 8)
             }
         }
         .frame(minWidth: 250)
@@ -221,6 +235,13 @@ struct SnippetRow: View {
             }
             
             Spacer()
+            
+            // View/Edit Indicator
+            if !snippet.isDirectory {
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary.opacity(0.5))
+            }
         }
         .padding(.vertical, 4)
         .contentShape(Rectangle())

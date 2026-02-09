@@ -98,22 +98,27 @@ struct SnippetCreationView: View {
             }
             .padding()
             
+            Divider()
+            
             HStack(spacing: 16) {
-                Button("Cancel", role: .cancel) {
+                Spacer()
+                
+                Button("Cancel") {
                     dismiss()
                 }
                 .keyboardShortcut(.cancelAction)
                 
-                Button("Save Snippet") {
+                Button("Create Snippet") {
                     saveSnippet()
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(name.isEmpty || code.isEmpty)
                 .keyboardShortcut(.defaultAction)
             }
-            .padding(.bottom, 16)
+            .padding()
+            .background(Color(NSColor.controlBackgroundColor))
         }
-        .padding()
+        .padding(0)
         .frame(width: 800, height: 600)
     }
     

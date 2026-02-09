@@ -123,25 +123,35 @@ struct SnippetDetailView: View {
             }
             .padding()
             
+            Divider()
+            
             HStack {
                 Button(role: .destructive) {
                     showDeleteConfirmation = true
                 } label: {
                     Label("Delete", systemImage: "trash")
                 }
+                .buttonStyle(.plain)
+                .foregroundColor(.red)
                 
                 Spacer()
+                
+                Button("Cancel") {
+                    dismiss()
+                }
+                .keyboardShortcut(.cancelAction)
                 
                 Button("Save Changes") {
                     saveChanges()
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(name.isEmpty || code.isEmpty)
-                .keyboardShortcut(.defaultAction)
+                .keyboardShortcut("s", modifiers: .command) // Cmd+S for Save
             }
-            .padding([.horizontal, .bottom])
+            .padding()
+            .background(Color(NSColor.controlBackgroundColor))
         }
-        .padding()
+        .padding(0) // Remove outer padding to let footer stretch
         .frame(width: 900, height: 700)
         .alert("Delete Snippet?", isPresented: $showDeleteConfirmation) {
             Button("Cancel", role: .cancel) { }

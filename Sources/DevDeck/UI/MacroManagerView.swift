@@ -70,9 +70,15 @@ struct MacroManagerView: View {
             }
             .navigationTitle("Profiles")
             .toolbar {
+                Button(action: importProfile) {
+                    Label("Import Profile", systemImage: "square.and.arrow.down")
+                }
+                .help("Import Profile from JSON")
+                
                 Button(action: addProfile) {
                     Label("Add Profile", systemImage: "plus")
                 }
+                .help("Create New Profile")
             }
         } detail: {
             // MAIN CANVAS
@@ -210,6 +216,13 @@ struct MacroManagerView: View {
                 }
                 .disabled(profileManager.profiles[index].name == "Global")
                 .help("Delete Profile")
+            }
+            
+            ToolbarItem(placement: .automatic) {
+                Button(action: { exportProfile(profile) }) {
+                    Label("Export Profile", systemImage: "square.and.arrow.up")
+                }
+                .help("Export Profile to JSON")
             }
 
 
@@ -498,16 +511,50 @@ struct MacroManagerView: View {
     
     private func deleteProfile() {
         if let offsets = profileToDeleteIndex {
-            // Check if active profile is being deleted
-            // If so, we might want to switch to another profile or handle it gracefully
-            // The ProfileManager likely handles the data removal, but UI selection might need update.
-            // For now, just delete.
             profileManager.deleteProfile(at: offsets)
             if selectedProfile != nil && !profileManager.profiles.contains(where: { $0.id == selectedProfile?.id }) {
                 selectedProfile = nil
             }
         }
         profileToDeleteIndex = nil
+    }
+    
+    // MARK: - Import/Export Helpers
+    
+    private func exportProfile(_ profile: Profile) {
+        let savePanel = NSSavePanel()
+        savePanel.allowedContentTypes = [.json]
+        savePanel.canCreateDirectories = true
+        savePanel.isExtensionHidden = false
+        savePanel.title = "Export Profile"
+        savePanel.message = "Choose where to save your profile backup"
+        savePanel.nameFieldStringValue = "\(profile.name).json"
+        
+        savePanel.begin { response in
+            if response == .OK, let url = savePanel.url {
+                profileManager.exportProfile(profile, to: url)
+            }
+        }
+    }
+    
+    private func importProfile() {
+        let openPanel = NSOpenPanel()
+        openPanel.allowedContentTypes = [.json]
+        openPanel.allowsMultipleSelection = false
+        openPanel.canChooseDirectories = false
+        openPanel.canChooseFiles = true
+        openPanel.title = "Import Profile"
+        openPanel.message = "Choose a DevDeck profile JSON file to import"
+        
+        openPanel.begin { response in
+            if response == .OK, let url = openPanel.url {
+                profileManager.importProfile(from: url)
+                // Update selection to the new profile if it was set as active
+                if let newActive = profileManager.activeProfile {
+                    selectedProfile = newActive
+                }
+            }
+        }
     }
 }
 

@@ -119,4 +119,49 @@ class ProfileManager: ObservableObject {
         profiles.remove(atOffsets: offsets)
         save()
     }
+    
+    // MARK: - Import/Export
+    
+    func exportProfile(_ profile: Profile, to url: URL) {
+        do {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .prettyPrinted
+            let data = try encoder.encode(profile)
+            try data.write(to: url)
+            print("Exported profile '\(profile.name)' to: \(url.path)")
+        } catch {
+            print("Failed to export profile: \(error)")
+        }
+    }
+    
+    func importProfile(from url: URL) {
+        do {
+            let data = try Data(contentsOf: url)
+            let decoder = JSONDecoder()
+            var importedProfile = try decoder.decode(Profile.self, from: data)
+            
+            // Generate new IDs to prevent collisions if imported on the same machine
+            importedProfile.id = UUID()
+            for i in 0..<importedProfile.macros.count {
+                importedProfile.macros[i].id = UUID()
+            }
+            
+            // Add suffix if name exists
+            var uniqueName = importedProfile.name
+            var counter = 1
+            while profiles.contains(where: { $0.name == uniqueName }) {
+                uniqueName = "\(importedProfile.name) \(counter)"
+                counter += 1
+            }
+            importedProfile.name = uniqueName
+            
+            profiles.append(importedProfile)
+            save()
+            
+            // Automatically switch to the imported profile
+            activeProfile = importedProfile
+        } catch {
+            print("Failed to import profile: \(error)")
+        }
+    }
 }

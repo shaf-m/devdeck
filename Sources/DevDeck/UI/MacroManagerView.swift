@@ -16,6 +16,8 @@ struct MacroManagerView: View {
     
     // Drag & Drop
     @State private var draggingMacro: Macro?
+    @State private var macroToDelete: Macro?
+    @State private var showDeleteConfirmation = false
     
     // Helper to get app name
     func nameForBundleId(_ bundleId: String) -> String {
@@ -227,7 +229,10 @@ struct MacroManagerView: View {
             
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 250))], spacing: 16) {
                 ForEach($profileManager.profiles[index].macros) { $macro in
-                    MacroConfigCard(macro: $macro)
+                    MacroConfigCard(macro: $macro) {
+                        macroToDelete = macro
+                        showDeleteConfirmation = true
+                    }
                         .contextMenu {
                             Button(role: .destructive) {
                                 if let mIndex = profileManager.profiles[index].macros.firstIndex(where: { $0.id == $macro.id }) {
@@ -290,6 +295,27 @@ struct MacroManagerView: View {
                     }
                 }
                 return true
+            }
+            .alert("Delete Macro?", isPresented: $showDeleteConfirmation) {
+                Button("Cancel", role: .cancel) {
+                    macroToDelete = nil
+                }
+                Button("Delete", role: .destructive) {
+                    if let macro = macroToDelete {
+                        DispatchQueue.main.async {
+                            if let mIndex = profileManager.profiles[index].macros.firstIndex(where: { $0.id == macro.id }) {
+                                withAnimation {
+                                    _ = profileManager.profiles[index].macros.remove(at: mIndex)
+                                }
+                            }
+                            macroToDelete = nil
+                        }
+                    } else {
+                        macroToDelete = nil
+                    }
+                }
+            } message: {
+                Text("Are you sure you want to delete '\(macroToDelete?.label ?? "this macro")'? This action cannot be undone.")
             }
         }
     }

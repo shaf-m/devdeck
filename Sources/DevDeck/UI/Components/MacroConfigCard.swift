@@ -3,6 +3,8 @@ import SwiftUI
 struct MacroConfigCard: View {
     @Binding var macro: Macro
     
+    var onDelete: () -> Void
+    
     // SF Symbols for Icon Picker (Simplified list for now)
     let availableIcons = ["terminal", "safari", "folder", "play.fill", "stop.fill", "gear", "command", "globe", "cpu", "keyboard", "text.alignleft"]
     
@@ -31,6 +33,15 @@ struct MacroConfigCard: View {
                     .font(.headline)
                 
                 Spacer()
+                
+                // Delete Button
+                Button(role: .destructive, action: onDelete) {
+                    Image(systemName: "trash")
+                        .foregroundColor(.red.opacity(0.7))
+                        .font(.system(size: 16))
+                }
+                .buttonStyle(.plain)
+                .help("Delete Macro")
                 
                 // Drag Handle
                 Image(systemName: "line.3.horizontal")

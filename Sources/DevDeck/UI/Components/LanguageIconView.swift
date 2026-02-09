@@ -2,18 +2,28 @@ import SwiftUI
 
 struct LanguageIconView: View {
     let language: String
+    var size: CGSize? = nil
     
     var body: some View {
         if let svgString = LanguageIcons.svgs[language],
            let data = svgString.data(using: .utf8),
            let nsImage = NSImage(data: data) {
-            Image(nsImage: nsImage)
+            
+            let imageToDisplay: NSImage
+            if let targetSize = size {
+                nsImage.size = targetSize
+                imageToDisplay = nsImage
+            } else {
+                imageToDisplay = nsImage
+            }
+            
+            return AnyView(Image(nsImage: imageToDisplay)
                 .resizable()
-                .aspectRatio(contentMode: .fit)
+                .aspectRatio(contentMode: .fit))
         } else {
             // Fallback for unknown languages or if SVG fails
-            Image(systemName: "doc.text")
-                .foregroundColor(.secondary)
+            return AnyView(Image(systemName: "doc.text")
+                .foregroundColor(.secondary))
         }
     }
 }

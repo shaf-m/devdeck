@@ -57,37 +57,67 @@ struct SnippetDetailView: View {
             }
             .padding([.top, .horizontal])
             
-            Form {
-                Section(header: Text("Details")) {
-                    TextField("Name", text: $name)
-                        .textFieldStyle(.roundedBorder)
+            HStack(alignment: .top, spacing: 20) {
+                // Left Column: Details
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Details")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
                     
-                    Picker("Language", selection: $language) {
-                        ForEach(languages, id: \.1) { lang in
-                            HStack {
-                                LanguageIconView(language: lang.1)
-                                    .frame(width: 16, height: 16)
-                                Text(lang.0)
-                            }
-                            .tag(lang.1)
+                    VStack(alignment: .leading, spacing: 10) {
+                        TextField("Name", text: $name)
+                            .textFieldStyle(.roundedBorder)
+                            .font(.headline)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Language")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            LanguagePicker(selection: $language, languages: languages.map { ($0.0, $0.1) })
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Notes")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            TextEditor(text: $notes)
+                                .font(.body)
+                                .frame(height: 150)
+                                .padding(4)
+                                .background(Color(NSColor.controlBackgroundColor))
+                                .cornerRadius(6)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                                )
                         }
                     }
-                    .pickerStyle(.menu)
-                    
-                    TextField("Notes", text: $notes, axis: .vertical)
-                        .lineLimit(2...4)
-                        .textFieldStyle(.roundedBorder)
+                    .padding(8)
+                    .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
+                    .cornerRadius(8)
                 }
+                .frame(width: 250)
                 
-                Section(header: Text("Code")) {
+                // Right Column: Code
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Code")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    
                     CodeEditorView(
                         text: $code,
                         language: language
                     )
-                    .frame(minHeight: 350)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color(NSColor.textBackgroundColor))
+                    .cornerRadius(8)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                    )
                 }
             }
-            .formStyle(.grouped)
+            .padding()
             
             HStack {
                 Button(role: .destructive) {
@@ -108,7 +138,7 @@ struct SnippetDetailView: View {
             .padding([.horizontal, .bottom])
         }
         .padding()
-        .frame(width: 650, height: 700)
+        .frame(width: 900, height: 700)
         .alert("Delete Snippet?", isPresented: $showDeleteConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {

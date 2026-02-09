@@ -63,8 +63,10 @@ struct MacroManagerView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
                             // We reuse RadialMenuView but pass a read-only or dummy action
-                            RadialMenuView(profileManager: profileManager, onExecute: { _ in })
-                                .frame(width: 300, height: 300)
+                            // Pass 'profile' (the one being edited) as the preview
+                            RadialMenuView(profileManager: profileManager, previewProfile: profile, onExecute: { _ in })
+                                .frame(width: 450, height: 450) // Increased from 300 to fit new 170pt radius
+                                .scaleEffect(0.8) // Scale down to fit in the UI nicely
                                 .background(Color.black.opacity(0.8)) // Dark preview background
                                 .cornerRadius(20)
                                 .overlay(

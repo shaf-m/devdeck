@@ -74,9 +74,15 @@ class AppCoordinator: ObservableObject {
             defer: false
         )
         
-        let contentView = RadialMenuView(profileManager: profileManager) { [weak self] macro in
-            self?.executeMacro(macro)
-        }
+        let contentView = RadialMenuView(
+            profileManager: profileManager,
+            onExecute: { [weak self] macro in
+                self?.executeMacro(macro)
+            },
+            onClose: { [weak self] in
+                self?.hideOverlay()
+            }
+        )
         window.contentView = NSHostingView(rootView: contentView)
         self.overlayWindow = window
         // Ensure it starts hidden

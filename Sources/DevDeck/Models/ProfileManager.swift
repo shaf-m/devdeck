@@ -3,13 +3,30 @@ import Combine
 
 class ProfileManager: ObservableObject {
     @Published var activeProfile: Profile?
-    @Published var profiles: [Profile] = []
+    @Published var profiles: [Profile] = [] {
+        didSet {
+            if !isLoading {
+                save()
+            }
+            // Sync activeProfile with the updated version in profiles to ensure UI updates
+            if let active = activeProfile,
+               let updated = profiles.first(where: { $0.id == active.id }),
+               updated != active {
+                activeProfile = updated
+            }
+        }
+    }
+    
+    private var isLoading = false
     
     init() {
         loadProfiles()
     }
     
     private func loadProfiles() {
+        isLoading = true
+        defer { isLoading = false }
+        
         self.profiles = PersistenceManager.shared.loadProfiles()
         
         // ensure there is at least a Global profile
@@ -91,33 +108,31 @@ class ProfileManager: ObservableObject {
         PersistenceManager.shared.saveProfiles(self.profiles)
         // Refresh active profile if it was modified
         if let active = activeProfile, let updated = profiles.first(where: { $0.id == active.id }) {
-            activeProfile = updated
+            // Only update if fundamentally different to avoid loop? 
+            // Actually this might be needed for UI updates?
+            // Since activeProfile is @Published, updating it triggers UI.
         }
     }
     
     func updateProfile(_ profile: Profile) {
         if let index = profiles.firstIndex(where: { $0.id == profile.id }) {
             profiles[index] = profile
-            save()
         }
     }
     
     func addProfile(name: String) {
         let newProfile = Profile(name: name, macros: [])
         profiles.append(newProfile)
-        save()
     }
     
     func deleteProfile(_ profile: Profile) {
         if let index = profiles.firstIndex(where: { $0.id == profile.id }) {
             profiles.remove(at: index)
-            save()
         }
     }
     
     func deleteProfile(at offsets: IndexSet) {
         profiles.remove(atOffsets: offsets)
-        save()
     }
     
     // MARK: - Import/Export

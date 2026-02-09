@@ -9,59 +9,94 @@ struct RadialMenuView: View {
     
     @State private var isVisible = false
     
+    // Helper to get icon for current profile
+    func getProfileIcon() -> NSImage? {
+        if let bundleId = profileManager.activeProfile?.associatedBundleIds.first,
+           let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) {
+            return NSWorkspace.shared.icon(forFile: url.path)
+        }
+        return nil
+    }
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Circular Glass Background
+                // 1. Circular Glass Background (The "Stage")
                 Circle()
                     .fill(.ultraThinMaterial)
-                    .overlay(Circle().fill(Color.black.opacity(0.4)))
-                    .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 10)
-                    .padding(10) // Slight padding so shadow isn't clipped by window bounds? 
-                                 // Actually window is 500x500, so we can fill it mostly.
+                    .background(Circle().fill(Color.black.opacity(0.6))) // Darker backing
+                    .overlay(
+                        Circle()
+                            .stroke(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [.white.opacity(0.2), .white.opacity(0.05)]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
+                    )
+                    .shadow(color: .black.opacity(0.5), radius: 30, x: 0, y: 15) // Deep shadow
+                    .padding(20)
                     .opacity(isVisible ? 1 : 0)
-                    .scaleEffect(isVisible ? 1 : 0.8) // Adding scale in for window entrance feel
-                    .animation(.easeOut(duration: 0.2), value: isVisible)
+                    .scaleEffect(isVisible ? 1 : 0.9)
+                    .animation(.easeOut(duration: 0.25), value: isVisible)
                 
-                // Central "Hub"
+                // 2. Central "Hub" (App Icon)
                 ZStack {
                     Circle()
                         .fill(.ultraThinMaterial)
-                        .frame(width: 120, height: 120)
-                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+                        .background(Circle().fill(Color.black.opacity(0.5)))
+                        .frame(width: 140, height: 140) // Larger Hub
+                        .overlay(
+                            Circle().stroke(.white.opacity(0.1), lineWidth: 1)
+                        )
+                        .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
                     
-                    VStack(spacing: 4) {
-                        Text(profileManager.activeProfile?.name ?? "None")
-                            .font(.headline)
-                            .foregroundColor(.primary)
+                    VStack(spacing: 8) {
+                        if let icon = getProfileIcon() {
+                            Image(nsImage: icon)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 64, height: 64)
+                                .shadow(radius: 5)
+                        } else {
+                            // Fallback / Global Icon
+                            Image(systemName: "square.stack.3d.up.fill")
+                                .font(.system(size: 40))
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Text(profileManager.activeProfile?.name ?? "Global")
+                            .font(.system(size: 14, weight: .bold, design: .monospaced)) // SF Mono
+                            .foregroundColor(.white.opacity(0.9))
+                        
                         Text("\(profileManager.activeProfile?.macros.count ?? 0) macros")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        Text("v2.0")
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundColor(.blue.opacity(0.7))
+                            .font(.system(size: 10, design: .monospaced))
+                            .foregroundColor(.gray)
                     }
                 }
-                .contentShape(Circle()) // Make the whole hub clickable
-                .scaleEffect(isVisible ? 1 : 0.8)
+                .contentShape(Circle())
+                .scaleEffect(isVisible ? 1 : 0.5)
                 .opacity(isVisible ? 1 : 0)
-                .animation(.spring(response: 0.4, dampingFraction: 0.6).delay(0.05), value: isVisible)
+                .animation(.spring(response: 0.5, dampingFraction: 0.7).delay(0.1), value: isVisible)
                 .onTapGesture {
                     withAnimation {
                         profileManager.cycleNextProfile()
                     }
                 }
                 
+                // 3. Action Nodes
                 if let macros = profileManager.activeProfile?.macros {
                     ForEach(Array(macros.enumerated()), id: \.element.id) { index, macro in
-                        RadialButton(macro: macro, index: index, total: macros.count, radius: 140) {
+                        RadialButton(macro: macro, index: index, total: macros.count, radius: 170) { // Increased radius
                             onExecute(macro)
                         }
-                        .scaleEffect(isVisible ? 1 : 0.5)
+                        .scaleEffect(isVisible ? 1 : 0.01)
                         .opacity(isVisible ? 1 : 0)
                         .animation(
                             .spring(response: 0.4, dampingFraction: 0.7)
-                            .delay(Double(index) * 0.03 + 0.1),
+                            .delay(Double(index) * 0.03 + 0.15),
                             value: isVisible
                         )
                     }
@@ -69,7 +104,9 @@ struct RadialMenuView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .onAppear {
-                isVisible = true
+                withAnimation {
+                    isVisible = true
+                }
             }
             .alert(isPresented: $showError) {
                 Alert(title: Text("Execution Failed"), message: Text(errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
@@ -94,56 +131,78 @@ struct RadialButton: View {
     @State private var isHovering = false
     
     var body: some View {
-        let angle = Double(index) / Double(total) * 2 * .pi - .pi / 2
-        let x = cos(angle) * Double(radius)
-        let y = sin(angle) * Double(radius)
+        // Calculate angle: Start from -90 deg (Top)
+        // Explicit breakdown for compiler speed
+        let indexDouble = Double(index)
+        let totalDouble = Double(total)
+        let step = (360.0 / totalDouble)
+        let angleDegrees = indexDouble * step - 90.0
+        let angleRadians = angleDegrees * .pi / 180.0
         
-        Button(action: action) {
-            VStack(spacing: 8) {
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                gradient: Gradient(colors: [.blue.opacity(0.8), .purple.opacity(0.8)]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 60, height: 60)
-                        .shadow(color: isHovering ? .white.opacity(0.5) : .clear, radius: 10)
-                        .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 3)
-                    
-                    Image(systemName: macro.iconName ?? "circle")
-                        .font(.system(size: 24, weight: .medium))
-                        .foregroundColor(.white)
-                }
-                .scaleEffect(isHovering ? 1.1 : 1.0)
-                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isHovering)
-                
-                Text(macro.label)
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(8)
-                    .shadow(radius: 2)
-            }
-            .overlay(
-                // Shortcut Badge
-                Text("\(index + 1)")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundColor(.black)
-                    .frame(width: 16, height: 16)
-                    .background(Circle().fill(.white.opacity(0.9)))
-                    .offset(x: 20, y: -20) // Top-right of icon
-                , alignment: .top
-            )
+        let x = CGFloat(cos(angleRadians)) * radius
+        let y = CGFloat(sin(angleRadians)) * radius
+        
+        return Button(action: action) {
+            buttonView
         }
         .buttonStyle(PlainButtonStyle())
         .offset(x: x, y: y)
         .onHover { hovering in
             isHovering = hovering
         }
+    }
+    
+    private var buttonView: some View {
+        VStack(spacing: 8) {
+            ZStack {
+                // Node Circle
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color(nsColor: .controlAccentColor).opacity(0.7),
+                                Color.purple.opacity(0.7)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(
+                        Circle()
+                            .stroke(.white.opacity(0.3), lineWidth: 1)
+                    )
+                    .frame(width: 56, height: 56)
+                    .shadow(color: isHovering ? Color(nsColor: .controlAccentColor).opacity(0.6) : .clear, radius: 15) // Glow on hover
+                    .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 3)
+                
+                Image(systemName: macro.iconName ?? "circle")
+                    .font(.system(size: 22, weight: .semibold)) // slightly smaller execution
+                    .foregroundColor(.white)
+            }
+            .scaleEffect(isHovering ? 1.15 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isHovering)
+            
+            // Label (Monospaced)
+            Text(macro.label)
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .foregroundColor(.white)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background(Capsule().fill(Color.black.opacity(0.6)))
+                .shadow(radius: 2)
+        }
+        // Badge Overlay
+        .overlay(
+            ZStack {
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 18, height: 18)
+                Text("\(index + 1)")
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .foregroundColor(.black)
+            }
+            .offset(x: 22, y: -22) // Adjusted offset
+            , alignment: .top
+        )
     }
 }

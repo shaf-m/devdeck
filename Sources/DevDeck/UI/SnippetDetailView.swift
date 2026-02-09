@@ -30,7 +30,8 @@ struct SnippetDetailView: View {
         VStack(spacing: 20) {
             HStack {
                 Text("Edit Snippet")
-                    .font(.headline)
+                    .font(.title2)
+                    .bold()
                 Spacer()
                 
                 Button(action: {
@@ -41,25 +42,29 @@ struct SnippetDetailView: View {
                         .foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
+                .keyboardShortcut(.cancelAction)
             }
+            .padding([.top, .horizontal])
             
             Form {
-                TextField("Name", text: $name)
-                
-                Picker("Language", selection: $language) {
-                    ForEach(languages, id: \.1) { lang in
-                        Text(lang.0).tag(lang.1)
+                Section(header: Text("Details")) {
+                    TextField("Name", text: $name)
+                        .textFieldStyle(.roundedBorder)
+                    
+                    Picker("Language", selection: $language) {
+                        ForEach(languages, id: \.1) { lang in
+                            Text(lang.0).tag(lang.1)
+                        }
                     }
+                    .pickerStyle(.menu)
                 }
                 
                 Section(header: Text("Code")) {
-                    TextEditor(text: $code)
-                        .font(.system(.body, design: .monospaced))
-                        .frame(minHeight: 300)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 4)
-                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                        )
+                    CodeEditorView(
+                        text: $code,
+                        language: language
+                    )
+                    .frame(minHeight: 350)
                 }
             }
             .formStyle(.grouped)
@@ -74,22 +79,17 @@ struct SnippetDetailView: View {
                 
                 Spacer()
                 
-                Button {
-                    let pasteboard = NSPasteboard.general
-                    pasteboard.clearContents()
-                    pasteboard.setString(code, forType: .string)
-                } label: {
-                    Label("Copy", systemImage: "doc.on.doc")
-                }
-
                 Button("Save Changes") {
                     saveChanges()
                 }
                 .buttonStyle(.borderedProminent)
+                .disabled(name.isEmpty || code.isEmpty)
+                .keyboardShortcut(.defaultAction)
             }
+            .padding([.horizontal, .bottom])
         }
         .padding()
-        .frame(width: 600, height: 600)
+        .frame(width: 650, height: 700)
     }
     
     private func saveChanges() {
@@ -98,16 +98,8 @@ struct SnippetDetailView: View {
             snippetManager.updateSnippet(snippet, newContent: code)
         }
         
-        // 2. Rename / Change Language if needed
-        // Note: Renaming relies on the 'current' file URL. If we just updated content, the file is still there.
-        // If we rename, the file moves.
-        // Ideally we do rename LAST so the URL is valid for update. 
-        // Or update first, then rename.
-        
+        // 2. Rename / Change Language
         if name != snippet.name || language != snippet.language {
-            // We need to re-fetch the fresh snippet reference potentially if updateSnippet didn't refresh 'snippet' locally (it doesn't, 'snippet' is a let struct).
-            // But 'snippet' struct holds the URL. updateSnippet writes to that URL. 
-            // So the URL is still valid.
             snippetManager.renameSnippet(snippet, newName: name, newLanguage: language)
         }
         

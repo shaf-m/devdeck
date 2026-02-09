@@ -19,43 +19,50 @@ struct SnippetCreationView: View {
     var body: some View {
         VStack(spacing: 20) {
             Text("Create New Snippet")
-                .font(.headline)
+                .font(.title2)
+                .bold()
+                .padding(.top, 10)
             
             Form {
-                TextField("Name", text: $name)
-                
-                Picker("Language", selection: $language) {
-                    ForEach(languages, id: \.1) { lang in
-                        Text(lang.0).tag(lang.1)
+                Section(header: Text("Details")) {
+                    TextField("Name", text: $name)
+                        .textFieldStyle(.roundedBorder)
+                    
+                    Picker("Language", selection: $language) {
+                        ForEach(languages, id: \.1) { lang in
+                            Text(lang.0).tag(lang.1)
+                        }
                     }
+                    .pickerStyle(.menu)
                 }
                 
                 Section(header: Text("Code")) {
-                    TextEditor(text: $code)
-                        .font(.system(.body, design: .monospaced))
-                        .frame(minHeight: 200)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 4)
-                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                        )
+                    CodeEditorView(
+                        text: $code,
+                        language: language
+                    )
+                    .frame(minHeight: 250)
                 }
             }
             .formStyle(.grouped)
             
-            HStack {
+            HStack(spacing: 16) {
                 Button("Cancel", role: .cancel) {
                     dismiss()
                 }
+                .keyboardShortcut(.cancelAction)
                 
                 Button("Save Snippet") {
                     saveSnippet()
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(name.isEmpty || code.isEmpty)
+                .keyboardShortcut(.defaultAction)
             }
+            .padding(.bottom, 16)
         }
         .padding()
-        .frame(width: 500, height: 500)
+        .frame(width: 550, height: 600)
     }
     
     private func saveSnippet() {

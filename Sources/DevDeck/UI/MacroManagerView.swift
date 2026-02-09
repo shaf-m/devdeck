@@ -81,24 +81,36 @@ struct MacroManagerView: View {
         ScrollView {
             VStack(spacing: 24) {
                 // 1. TOP SECTION: LIVE PREVIEW
-                VStack {
-                    Text("Live Preview")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                VStack(spacing: 8) {
+                    HStack {
+                        Text("Live Preview")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    }
+                    .padding(.horizontal)
                     
-                    RadialMenuView(profileManager: profileManager, previewProfile: profile, onExecute: { _ in })
-                        .frame(width: 450, height: 450)
-                        .scaleEffect(0.8)
-                        .background(Color.black.opacity(0.8))
-                        .cornerRadius(20)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                        )
-                        .environment(\.colorScheme, .dark)
+                    ZStack {
+                        // Deck Bezel
+                        RoundedRectangle(cornerRadius: 30)
+                            .fill(Color(NSColor.windowBackgroundColor))
+                            .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
+                            .frame(width: 480, height: 480)
+                        
+                        // Screen
+                        RadialMenuView(profileManager: profileManager, previewProfile: profile, onExecute: { _ in })
+                            .frame(width: 450, height: 450)
+                            .scaleEffect(0.85)
+                            .background(Color.black)
+                            .clipShape(Circle())
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.white.opacity(0.1), lineWidth: 4)
+                            )
+                            .environment(\.colorScheme, .dark)
+                    }
+                    .padding()
                 }
-                .padding()
                 
                 Divider()
                 
@@ -143,18 +155,31 @@ struct MacroManagerView: View {
     }
     
     private func linkedAppsSection(profile: Profile, index: Int) -> some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Linked Apps")
-                    .font(.headline)
-                Spacer()
-                Button(action: { showAppPicker = true }) {
-                    Label("Add App", systemImage: "plus")
+                VStack(alignment: .leading) {
+                    Text("Linked Apps")
+                        .font(.title3)
+                        .bold()
+                    Text("Profile becomes active when these apps are focused")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
+                
+                Spacer()
+                
+                Button(action: { showAppPicker = true }) {
+                    Label("Link App", systemImage: "plus")
+                        .fontWeight(.medium)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
                 .popover(isPresented: $showAppPicker) {
                     AppSelectionView { bundleId in
                         if !profileManager.profiles[index].associatedBundleIds.contains(bundleId) {
-                            profileManager.profiles[index].associatedBundleIds.append(bundleId)
+                            withAnimation {
+                                profileManager.profiles[index].associatedBundleIds.append(bundleId)
+                            }
                         }
                         showAppPicker = false
                     }
@@ -162,11 +187,19 @@ struct MacroManagerView: View {
             }
             
             if profile.associatedBundleIds.isEmpty {
-                Text("No apps linked. This profile will only be active when selected manually.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                HStack(spacing: 12) {
+                    Image(systemName: "app.dashed")
+                        .font(.largeTitle)
+                        .foregroundColor(.secondary.opacity(0.3))
+                    Text("No apps linked. This profile will only be active when selected manually.")
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color(NSColor.controlBackgroundColor))
+                .cornerRadius(12)
             } else {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))], spacing: 12) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 140))], spacing: 12) {
                     ForEach(profile.associatedBundleIds, id: \.self) { bundleId in
                         HStack {
                             if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) {
@@ -180,22 +213,33 @@ struct MacroManagerView: View {
                             
                             Text(nameForBundleId(bundleId))
                                 .font(.caption)
+                                .fontWeight(.medium)
                                 .lineLimit(1)
                                 .truncationMode(.tail)
                             
                             Spacer()
                             
                             Button(action: {
+                                withAnimation {
                                     profileManager.profiles[index].associatedBundleIds.removeAll(where: { $0 == bundleId })
+                                }
                             }) {
                                 Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(.secondary)
                             }
-                            .buttonStyle(PlainButtonStyle())
+                            .buttonStyle(.plain)
+                            .onHover { inside in
+                                if inside { NSCursor.pointingHand.push() }
+                                else { NSCursor.pop() }
+                            }
                         }
-                        .padding(8)
-                        .background(Color.secondary.opacity(0.1))
-                        .cornerRadius(8)
+                        .padding(10)
+                        .background(Color(NSColor.controlBackgroundColor))
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
+                        )
                     }
                 }
             }
@@ -204,11 +248,19 @@ struct MacroManagerView: View {
     }
 
     private func macrosGridSection(index: Int) -> some View {
-        VStack(alignment: .leading) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Macros")
-                    .font(.headline)
+                VStack(alignment: .leading) {
+                    Text("Macros")
+                        .font(.title3)
+                        .bold()
+                    Text("Drag to reorder • Drop snippets to add")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
                 Spacer()
+                
                 Button(action: {
                     let newMacro = Macro(
                         label: "New Macro",
@@ -220,39 +272,63 @@ struct MacroManagerView: View {
                         profileManager.profiles[index].macros.append(newMacro)
                     }
                 }) {
-                    Label("Add Macro", systemImage: "plus.circle.fill")
-                        .font(.body.bold())
+                    Label("Add Macro", systemImage: "plus")
+                        .fontWeight(.medium)
                 }
                 .buttonStyle(.borderedProminent)
+                .controlSize(.large)
             }
             .padding(.horizontal)
             
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 250))], spacing: 16) {
-                ForEach($profileManager.profiles[index].macros) { $macro in
-                    MacroConfigCard(macro: $macro) {
-                        macroToDelete = macro
-                        showDeleteConfirmation = true
+            Group {
+                if profileManager.profiles[index].macros.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "command.square")
+                            .font(.system(size: 48))
+                            .foregroundColor(.secondary.opacity(0.4))
+                        Text("No Macros Configured")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Text("Add a macro to get started, or drag snippets from the library.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
                     }
-                        .contextMenu {
-                            Button(role: .destructive) {
-                                if let mIndex = profileManager.profiles[index].macros.firstIndex(where: { $0.id == $macro.id }) {
-                                    withAnimation {
-                                        _ = profileManager.profiles[index].macros.remove(at: mIndex)
-                                    }
-                                }
-                            } label: {
-                                Label("Delete Macro", systemImage: "trash")
+                    .frame(maxWidth: .infinity)
+                    .padding(40)
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(16)
+                    .padding(.horizontal)
+                } else {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 280))], spacing: 16) {
+                        ForEach($profileManager.profiles[index].macros) { $macro in
+                            MacroConfigCard(macro: $macro) {
+                                macroToDelete = macro
+                                showDeleteConfirmation = true
                             }
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    if let mIndex = profileManager.profiles[index].macros.firstIndex(where: { $0.id == $macro.id }) {
+                                        withAnimation {
+                                            _ = profileManager.profiles[index].macros.remove(at: mIndex)
+                                        }
+                                    }
+                                } label: {
+                                    Label("Delete Macro", systemImage: "trash")
+                                }
+                            }
+                            // Drag and Drop Logic
+                            .onDrag {
+                                self.draggingMacro = macro
+                                return NSItemProvider(object: macro.id.uuidString as NSString)
+                            }
+                            .onDrop(of: [.text], delegate: MacroDragRelocateDelegate(item: macro, listData: $profileManager.profiles[index].macros, current: $draggingMacro))
                         }
-                    // Drag and Drop Logic
-                        .onDrag {
-                            self.draggingMacro = macro
-                            return NSItemProvider(object: macro.id.uuidString as NSString)
-                        }
-                        .onDrop(of: [.text], delegate: MacroDragRelocateDelegate(item: macro, listData: $profileManager.profiles[index].macros, current: $draggingMacro))
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 20)
                 }
             }
-            .padding()
             // Drop zone for Snippets
             .onDrop(of: [.text], isTargeted: nil) { providers in
                 guard let first = providers.first else { return false }

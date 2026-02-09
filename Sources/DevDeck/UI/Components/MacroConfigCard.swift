@@ -27,8 +27,17 @@ struct MacroConfigCard: View {
                 .frame(width: 32)
                 
                 TextField("Label", text: $macro.label)
-                    .font(.headline)
                     .textFieldStyle(PlainTextFieldStyle())
+                    .font(.headline)
+                
+                Spacer()
+                
+                // Drag Handle
+                Image(systemName: "line.3.horizontal")
+                    .foregroundColor(.secondary.opacity(0.5))
+                    .font(.system(size: 20))
+                    .padding(.leading, 8)
+                    .accessibilityLabel("Drag to Reorder")
             }
             
             Divider()
@@ -56,8 +65,11 @@ struct MacroConfigCard: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
             }
+            
+            Spacer(minLength: 0) // Push content up, ensure card fills height
         }
         .padding()
+        .frame(height: 220) // Fixed height for consistency
         .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)

@@ -4,9 +4,7 @@ struct MacroManagerView: View {
     @ObservedObject var profileManager: ProfileManager
     @State private var selectedProfile: Profile?
     
-    // Sync
-    @State private var showSyncAlert = false
-    @State private var syncURLString = "https://raw.githubusercontent.com/your-org/profiles/main/profiles.json"
+
     
     // App Picker
     @State private var showAppPicker = false
@@ -19,6 +17,10 @@ struct MacroManagerView: View {
     @State private var macroToDelete: Macro?
     @State private var showDeleteConfirmation = false
     
+    // Profile Deletion
+    @State private var showProfileDeleteConfirmation = false
+    @State private var profileToDeleteIndex: IndexSet?
+    
     // Helper to get app name
     func nameForBundleId(_ bundleId: String) -> String {
         if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) {
@@ -30,18 +32,38 @@ struct MacroManagerView: View {
     var body: some View {
         NavigationSplitView {
             // SIDEBAR
-            List(selection: $selectedProfile) {
-                ForEach(profileManager.profiles) { profile in
-                    NavigationLink(value: profile) {
-                        HStack {
-                            Image(systemName: "folder.fill")
-                                .foregroundColor(.blue)
-                            Text(profile.name)
-                                .fontWeight(profile.name == "Global" ? .bold : .regular)
+            VStack(spacing: 0) {
+                // Logo Area
+                HStack {
+                    Text("<DevDeck>")
+                        .font(.system(.title2, design: .monospaced))
+                        .fontWeight(.bold)
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [.blue, .purple],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                    Spacer()
+                }
+                .padding()
+                .padding(.top, 8)
+                
+                List(selection: $selectedProfile) {
+                    ForEach(profileManager.profiles) { profile in
+                        NavigationLink(value: profile) {
+                            HStack {
+                                Image(systemName: "folder.fill")
+                                    .foregroundColor(.blue)
+                                Text(profile.name)
+                                    .fontWeight(profile.name == "Global" ? .bold : .regular)
+                            }
                         }
                     }
+                    .onDelete(perform: confirmDeleteProfile)
                 }
-                .onDelete(perform: deleteProfile)
+                .navigationSplitViewColumnWidth(min: 200, ideal: 250, max: 300)
             }
             .navigationTitle("Profiles")
             .toolbar {
@@ -71,6 +93,16 @@ struct MacroManagerView: View {
                     }
                 }
         }
+        .alert("Delete Profile?", isPresented: $showProfileDeleteConfirmation) {
+            Button("Cancel", role: .cancel) {
+                profileToDeleteIndex = nil
+            }
+            Button("Delete", role: .destructive) {
+                deleteProfile()
+            }
+        } message: {
+            Text("Are you sure you want to delete this profile? This cannot be undone.")
+        }
     }
     
     // Extracted detail view to reduce compiler complexity
@@ -83,9 +115,14 @@ struct MacroManagerView: View {
                 // 1. TOP SECTION: LIVE PREVIEW
                 VStack(spacing: 8) {
                     HStack {
-                        Text("Live Preview")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
+                        VStack(alignment: .leading) {
+                            Text("Live Preview")
+                                .font(.title3)
+                                .bold()
+                            Text("Interact with the radial menu to test navigation")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                         Spacer()
                     }
                     .padding(.horizontal)
@@ -101,12 +138,7 @@ struct MacroManagerView: View {
                         RadialMenuView(profileManager: profileManager, previewProfile: profile, onExecute: { _ in })
                             .frame(width: 450, height: 450)
                             .scaleEffect(0.85)
-                            .background(Color.black)
-                            .clipShape(Circle())
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.white.opacity(0.1), lineWidth: 4)
-                            )
+                            .background(Color.clear)
                             .environment(\.colorScheme, .dark)
                     }
                     .padding()
@@ -137,21 +169,22 @@ struct MacroManagerView: View {
                 Button(action: { showSnippetLibrary.toggle() }) {
                     Label("Snippets", systemImage: "curlybraces")
                 }
+                .help("Show Snippet Library")
+            }
+            
+            ToolbarItem(placement: .automatic) {
+                Button(role: .destructive, action: {
+                    confirmDeleteProfile(at: IndexSet(integer: index))
+                }) {
+                    Label("Delete Profile", systemImage: "trash")
+                }
+                .disabled(profileManager.profiles[index].name == "Global")
+                .help("Delete Profile")
             }
 
-            ToolbarItem(placement: .automatic) {
-                Button(action: { showSyncAlert = true }) {
-                    Label("Sync", systemImage: "arrow.triangle.2.circlepath")
-                }
-            }
+
         }
-        .alert("Sync Profiles", isPresented: $showSyncAlert) {
-            TextField("URL", text: $syncURLString)
-            Button("Cancel", role: .cancel) { }
-            Button("Sync") {
-                print("Syncing from \(syncURLString)...")
-            }
-        }
+
     }
     
     private func linkedAppsSection(profile: Profile, index: Int) -> some View {
@@ -400,8 +433,23 @@ struct MacroManagerView: View {
         profileManager.addProfile(name: "New Profile")
     }
     
-    private func deleteProfile(at offsets: IndexSet) {
-        profileManager.deleteProfile(at: offsets)
+    private func confirmDeleteProfile(at offsets: IndexSet) {
+        profileToDeleteIndex = offsets
+        showProfileDeleteConfirmation = true
+    }
+    
+    private func deleteProfile() {
+        if let offsets = profileToDeleteIndex {
+            // Check if active profile is being deleted
+            // If so, we might want to switch to another profile or handle it gracefully
+            // The ProfileManager likely handles the data removal, but UI selection might need update.
+            // For now, just delete.
+            profileManager.deleteProfile(at: offsets)
+            if selectedProfile != nil && !profileManager.profiles.contains(where: { $0.id == selectedProfile?.id }) {
+                selectedProfile = nil
+            }
+        }
+        profileToDeleteIndex = nil
     }
 }
 

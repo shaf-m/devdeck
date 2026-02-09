@@ -1,12 +1,14 @@
 import SwiftUI
 
 struct DashboardView: View {
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @ObservedObject var profileManager: ProfileManager
     @State private var selectedProfile: Profile?
     @State private var editingMacro: Macro?
     @State private var isEditingMacro = false
     @State private var showNewProfileAlert = false
     @State private var newProfileName = ""
+    @State private var showHelp = false
     
     var body: some View {
         NavigationSplitView {
@@ -27,8 +29,13 @@ struct DashboardView: View {
             }
             .navigationTitle("Profiles")
             .toolbar {
-                Button(action: { showNewProfileAlert = true }) {
-                    Label("Add Profile", systemImage: "plus")
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button(action: { showHelp = true }) {
+                        Label("Help", systemImage: "questionmark.circle")
+                    }
+                    Button(action: { showNewProfileAlert = true }) {
+                        Label("Add Profile", systemImage: "plus")
+                    }
                 }
             }
             .alert("New Profile", isPresented: $showNewProfileAlert) {
@@ -58,6 +65,19 @@ struct DashboardView: View {
             }
         }
         .frame(minWidth: 700, minHeight: 500)
+        .sheet(isPresented: $showHelp) {
+            HelpView()
+        }
+        .sheet(isPresented: Binding(
+            get: { !hasCompletedOnboarding },
+            set: { hasCompletedOnboarding = !$0 }
+        )) {
+            OnboardingView(isPresented: Binding(
+                get: { !hasCompletedOnboarding },
+                set: { hasCompletedOnboarding = !$0 }
+            ))
+            .interactiveDismissDisabled()
+        }
     }
     
     private func deleteProfiles(at offsets: IndexSet) {
@@ -138,11 +158,13 @@ struct ProfileDetailView: View {
         }
         .navigationTitle(profile.name)
         .toolbar {
-            Button(action: {
-                selectedMacro = nil // New macro
-                showMacroEditor = true
-            }) {
-                Label("Add Macro", systemImage: "plus")
+            ToolbarItem(placement: .primaryAction) {
+                Button(action: {
+                    selectedMacro = nil // New macro
+                    showMacroEditor = true
+                }) {
+                    Label("Add Macro", systemImage: "plus")
+                }
             }
         }
         .onAppear {

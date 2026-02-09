@@ -16,18 +16,6 @@ struct DevDeckApp: App {
             MenuBarView(coordinator: coordinator)
         }
     }
-    
-    init() {
-        checkPermissions()
-    }
-    
-    func checkPermissions() {
-        let trusted = kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String
-        let options = [trusted: true] as CFDictionary
-        if !AXIsProcessTrustedWithOptions(options) {
-            print("Access Not Trusted! Prompting user...")
-        }
-    }
 }
 
 struct MenuBarView: View {

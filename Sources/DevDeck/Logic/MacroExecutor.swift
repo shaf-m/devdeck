@@ -33,8 +33,29 @@ class MacroExecutor {
     }
     
     private func openURL(_ urlString: String) {
-        if let url = URL(string: urlString) {
-            NSWorkspace.shared.open(url)
+        var processedString = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Add scheme if missing
+        if !processedString.lowercased().hasPrefix("http://") && !processedString.lowercased().hasPrefix("https://") {
+            // Check if it looks like a local file path
+            if processedString.hasPrefix("/") || processedString.hasPrefix("~") {
+                processedString = "file://" + processedString
+            } else {
+                processedString = "https://" + processedString
+            }
+        }
+        
+        if let url = URL(string: processedString) {
+            let success = NSWorkspace.shared.open(url)
+            if !success {
+                let error = "Failed to open URL: \(processedString). Ensure it is a valid web address or file path."
+                print("❌ \(error)")
+                NotificationCenter.default.post(name: .macroExecutionFailed, object: nil, userInfo: ["error": error])
+            }
+        } else {
+            let error = "Invalid URL format: \(urlString)"
+            print("❌ \(error)")
+            NotificationCenter.default.post(name: .macroExecutionFailed, object: nil, userInfo: ["error": error])
         }
     }
     

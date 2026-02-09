@@ -3,6 +3,8 @@ import SwiftUI
 struct MacroManagerView: View {
     @ObservedObject var profileManager: ProfileManager
     @State private var selectedProfile: Profile?
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @State private var showHelp = false
     
 
     
@@ -75,6 +77,11 @@ struct MacroManagerView: View {
                 }
                 .help("Import Profile from JSON")
                 
+                Button(action: { showHelp = true }) {
+                    Label("Help", systemImage: "questionmark.circle")
+                }
+                .help("Help & Tutorials")
+                
                 Button(action: addProfile) {
                     Label("Add Profile", systemImage: "plus")
                 }
@@ -105,9 +112,28 @@ struct MacroManagerView: View {
                         .font(.headline)
                         .foregroundColor(.secondary)
                         .padding(.top, 10)
+                    
+                    Button("Help & Tutorials") {
+                        showHelp = true
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+        }
+        .sheet(isPresented: $showHelp) {
+            HelpView()
+        }
+        .sheet(isPresented: Binding(
+            get: { !hasCompletedOnboarding },
+            set: { hasCompletedOnboarding = !$0 }
+        )) {
+            OnboardingView(isPresented: Binding(
+                get: { !hasCompletedOnboarding },
+                set: { hasCompletedOnboarding = !$0 }
+            ))
+            .interactiveDismissDisabled()
         }
         .inspector(isPresented: $showSnippetLibrary) {
             SnippetLibraryView()

@@ -40,14 +40,27 @@ Share your workflows with others or keep backups of your custom profiles using s
 - **Accessibility Permissions**: As a system-wide tool, DevDeck requires accessibility permissions to monitor the global hotkey and inject keystrokes. You will be prompted on first launch.
 
 ### Building from Source
+
+**Prerequisites:**
+- Xcode 14.0 or later (for macOS SDK).
+- Swift 5.7 or later.
+
 ```bash
 # Clone the repository
 git clone https://github.com/shafm/devdeck.git
 cd devdeck
 
-# Build using the provided script
-bash scripts/build_app.sh
+# Build and run directly
+swift run
+
+# Build for release
+./scripts/build_app.sh
+
+# Package as DMG
+./scripts/package_app.sh
 ```
+
+> **Note:** The compiled app will be located at `./DevDeck.app` (or `./DevDeck.dmg` if packaged).
 
 ## ⌨️ Global Controls
 

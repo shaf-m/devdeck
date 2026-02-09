@@ -10,6 +10,7 @@ struct DevDeckApp: App {
         Window("Macro Manager", id: "dashboard") {
             MacroManagerView(profileManager: coordinator.profileManager)
         }
+        .defaultSize(width: 1000, height: 800)
         
         MenuBarExtra("DevDeck", systemImage: "circle.circle.fill") {
             MenuBarView(coordinator: coordinator)

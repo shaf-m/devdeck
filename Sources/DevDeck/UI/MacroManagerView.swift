@@ -66,7 +66,7 @@ struct MacroManagerView: View {
                     }
                     .onDelete(perform: confirmDeleteProfile)
                 }
-                .navigationSplitViewColumnWidth(min: 200, ideal: 250, max: 300)
+                .navigationSplitViewColumnWidth(min: 260, ideal: 300, max: 400)
             }
             .navigationTitle("Profiles")
             .toolbar {

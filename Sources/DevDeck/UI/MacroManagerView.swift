@@ -86,9 +86,27 @@ struct MacroManagerView: View {
                let index = profileManager.profiles.firstIndex(where: { $0.id == selected.id }) {
                 profileDetailView(index: index)
             } else {
-                Text("Select a Profile to Edit")
-                    .font(.title)
-                    .foregroundColor(.secondary)
+                VStack(spacing: 20) {
+                    Text("Welcome to")
+                        .font(.title2)
+                        .foregroundColor(.secondary)
+                    
+                    Text("<DevDeck>")
+                        .font(.system(size: 48, weight: .bold, design: .monospaced))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [.blue, .purple],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                    
+                    Text("Select or create a profile to begin")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                        .padding(.top, 10)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .inspector(isPresented: $showSnippetLibrary) {

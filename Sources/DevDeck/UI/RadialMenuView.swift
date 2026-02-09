@@ -85,9 +85,12 @@ struct RadialMenuView: View {
                             .font(.system(size: 14, weight: .bold, design: .monospaced)) // SF Mono
                             .foregroundColor(.white.opacity(0.9))
                         
-                        Text("\(displayProfile?.macros.count ?? 0) macros")
-                            .font(.system(size: 10, design: .monospaced))
-                            .foregroundColor(.gray)
+                        HStack(spacing: 4) {
+                            Text("switch")
+                            Image(systemName: "chevron.right")
+                        }
+                        .font(.system(size: 10, design: .monospaced))
+                        .foregroundColor(.gray)
                     }
                 }
                 .contentShape(Circle())

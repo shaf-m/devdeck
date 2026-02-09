@@ -100,6 +100,13 @@ struct MacroConfigCard: View {
                                 .cornerRadius(6)
                                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
                         }
+                    } else if macro.type == .keystroke {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Shortcut")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            ShortcutRecorder(shortcutValue: $macro.value)
+                        }
                     } else {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Value")

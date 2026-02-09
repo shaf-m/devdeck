@@ -163,7 +163,7 @@ struct MacroManagerView: View {
                             .frame(width: 480, height: 480)
                         
                         // Screen
-                        RadialMenuView(profileManager: profileManager, previewProfile: profile, onExecute: { _ in })
+                        RadialMenuView(profileManager: profileManager, previewProfile: profile, onExecute: { _ in }, circlePadding: 5)
                             .frame(width: 450, height: 450)
                             .scaleEffect(0.85)
                             .background(Color.clear)

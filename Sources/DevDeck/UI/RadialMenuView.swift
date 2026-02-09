@@ -5,6 +5,7 @@ struct RadialMenuView: View {
     var previewProfile: Profile? = nil // Optional preview override
     var onExecute: (Macro) -> Void
     var onClose: (() -> Void)? = nil // Optional close handler
+    var circlePadding: CGFloat = 20
     
     @State private var errorMessage: String?
     @State private var showError: Bool = false
@@ -29,7 +30,7 @@ struct RadialMenuView: View {
         GeometryReader { geometry in
             ZStack {
                 // 0. Background Tap to Close
-                Color.black.opacity(0.01) // Nearly transparent to catch taps
+                Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture {
                         onClose?()
@@ -50,8 +51,8 @@ struct RadialMenuView: View {
                                 lineWidth: 1
                             )
                     )
-                    .shadow(color: .black.opacity(0.5), radius: 30, x: 0, y: 15) // Deep shadow
-                    .padding(5)
+                    .shadow(color: .black.opacity(0.5), radius: 15, x: 0, y: 5) // Reduced shadow to fit 500x500
+                    .padding(circlePadding)
                     .opacity(isVisible ? 1 : 0)
                     .scaleEffect(isVisible ? 1 : 0.9)
                     .animation(.easeOut(duration: 0.25), value: isVisible)
@@ -173,6 +174,7 @@ struct RadialMenuView: View {
                 }
             }
         }
+        .background(Color.clear)
     }
 }
 

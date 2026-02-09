@@ -81,9 +81,13 @@ class AppCoordinator: ObservableObject {
             },
             onClose: { [weak self] in
                 self?.hideOverlay()
-            }
+            },
+            circlePadding: 30
         )
-        window.contentView = NSHostingView(rootView: contentView)
+        let hostingView = NSHostingView(rootView: contentView)
+        hostingView.wantsLayer = true
+        hostingView.layer?.backgroundColor = NSColor.clear.cgColor
+        window.contentView = hostingView
         self.overlayWindow = window
         // Ensure it starts hidden
         window.orderOut(nil)

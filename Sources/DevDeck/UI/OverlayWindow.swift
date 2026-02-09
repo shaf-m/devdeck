@@ -3,14 +3,20 @@ import SwiftUI
 
 class OverlayWindow: NSPanel {
     init(contentRect: NSRect, backing: NSWindow.BackingStoreType, defer flag: Bool) {
-        super.init(contentRect: contentRect, styleMask: [.borderless, .nonactivatingPanel], backing: backing, defer: flag)
+        // Ensure we include fullSizeContentView for true transparancy in some cases
+        super.init(contentRect: contentRect, styleMask: [.borderless, .nonactivatingPanel, .fullSizeContentView], backing: backing, defer: flag)
         
         self.isFloatingPanel = true
         self.level = .floating
         self.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        
+        // Critical Transparency Settings
         self.backgroundColor = .clear
         self.isOpaque = false
         self.hasShadow = false
+        self.titlebarAppearsTransparent = true
+        self.titleVisibility = .hidden
+        
         self.ignoresMouseEvents = false // We want to click buttons
     }
     

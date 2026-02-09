@@ -8,11 +8,15 @@ struct Snippet: Identifiable, Codable, Hashable {
     var content: String
     var language: String { url.pathExtension }
     var isDirectory: Bool
+    var isPinned: Bool = false
     var children: [Snippet]? // For directories
 }
 
 class SnippetManager: ObservableObject {
     @Published var snippets: [Snippet] = []
+    
+    private var pinnedSnippetIDs: Set<String> = []
+    private let pinnedKey = "devdeck.pinnedSnippets"
     
     // Base Directory: ~/.devdeck/snippets
     private var baseURL: URL? {
@@ -22,6 +26,9 @@ class SnippetManager: ObservableObject {
     }
     
     init() {
+        if let savedPins = UserDefaults.standard.array(forKey: pinnedKey) as? [String] {
+            pinnedSnippetIDs = Set(savedPins)
+        }
         createBaseDirectoryIfNeeded()
         loadSnippets()
     }
@@ -58,10 +65,11 @@ class SnippetManager: ObservableObject {
             
             if isDir.boolValue {
                 let children = scanDirectory(at: fileURL)
-                result.append(Snippet(url: fileURL, content: "", isDirectory: true, children: children))
+                result.append(Snippet(url: fileURL, content: "", isDirectory: true, isPinned: false, children: children))
             } else {
                 if let content = try? String(contentsOf: fileURL, encoding: .utf8) {
-                    result.append(Snippet(url: fileURL, content: content, isDirectory: false, children: nil))
+                    let isPinned = pinnedSnippetIDs.contains(fileURL.path)
+                    result.append(Snippet(url: fileURL, content: content, isDirectory: false, isPinned: isPinned, children: nil))
                 }
             }
         }
@@ -116,5 +124,14 @@ class SnippetManager: ObservableObject {
         } catch {
             print("Failed to rename snippet: \(error)")
         }
+    }
+    func togglePin(for snippet: Snippet) {
+        if pinnedSnippetIDs.contains(snippet.id) {
+            pinnedSnippetIDs.remove(snippet.id)
+        } else {
+            pinnedSnippetIDs.insert(snippet.id)
+        }
+        UserDefaults.standard.set(Array(pinnedSnippetIDs), forKey: pinnedKey)
+        loadSnippets() // Reload to update UI state
     }
 }

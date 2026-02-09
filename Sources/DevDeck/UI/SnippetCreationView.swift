@@ -11,9 +11,17 @@ struct SnippetCreationView: View {
     let languages = [
         ("Shell Script", "sh"),
         ("Python", "py"),
+        ("JavaScript", "js"),
+        ("TypeScript", "ts"),
+        ("Java", "java"),
+        ("C", "c"),
+        ("SQL", "sql"),
+        ("HTML", "html"),
+        ("CSS", "css"),
+        ("JSON", "json"),
+        ("YAML", "yaml"),
         ("AppleScript", "applescript"),
-        ("Plain Text", "txt"),
-        ("JSON", "json")
+        ("Plain Text", "txt")
     ]
     
     var body: some View {
@@ -30,7 +38,12 @@ struct SnippetCreationView: View {
                     
                     Picker("Language", selection: $language) {
                         ForEach(languages, id: \.1) { lang in
-                            Text(lang.0).tag(lang.1)
+                            HStack {
+                                LanguageIconView(language: lang.1)
+                                    .frame(width: 16, height: 16)
+                                Text(lang.0)
+                            }
+                            .tag(lang.1)
                         }
                     }
                     .pickerStyle(.menu)

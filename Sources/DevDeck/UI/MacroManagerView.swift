@@ -126,6 +126,7 @@ struct MacroManagerView: View {
                         Spacer()
                     }
                     .padding(.horizontal)
+                    .padding(.top, 20)
                     
                     ZStack {
                         // Deck Bezel

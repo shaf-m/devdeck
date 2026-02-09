@@ -8,13 +8,22 @@ struct SnippetDetailView: View {
     @State private var name: String
     @State private var language: String
     @State private var code: String
+    @State private var showDeleteConfirmation = false
     
     let languages = [
         ("Shell Script", "sh"),
         ("Python", "py"),
+        ("JavaScript", "js"),
+        ("TypeScript", "ts"),
+        ("Java", "java"),
+        ("C", "c"),
+        ("SQL", "sql"),
+        ("HTML", "html"),
+        ("CSS", "css"),
+        ("JSON", "json"),
+        ("YAML", "yaml"),
         ("AppleScript", "applescript"),
-        ("Plain Text", "txt"),
-        ("JSON", "json")
+        ("Plain Text", "txt")
     ]
     
     init(snippetManager: SnippetManager, snippet: Snippet) {
@@ -53,7 +62,12 @@ struct SnippetDetailView: View {
                     
                     Picker("Language", selection: $language) {
                         ForEach(languages, id: \.1) { lang in
-                            Text(lang.0).tag(lang.1)
+                            HStack {
+                                LanguageIconView(language: lang.1)
+                                    .frame(width: 16, height: 16)
+                                Text(lang.0)
+                            }
+                            .tag(lang.1)
                         }
                     }
                     .pickerStyle(.menu)
@@ -71,8 +85,7 @@ struct SnippetDetailView: View {
             
             HStack {
                 Button(role: .destructive) {
-                    snippetManager.deleteSnippet(snippet)
-                    dismiss()
+                    showDeleteConfirmation = true
                 } label: {
                     Label("Delete", systemImage: "trash")
                 }
@@ -90,6 +103,15 @@ struct SnippetDetailView: View {
         }
         .padding()
         .frame(width: 650, height: 700)
+        .alert("Delete Snippet?", isPresented: $showDeleteConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                snippetManager.deleteSnippet(snippet)
+                dismiss()
+            }
+        } message: {
+            Text("Are you sure you want to delete '\(snippet.name)'? This action cannot be undone.")
+        }
     }
     
     private func saveChanges() {

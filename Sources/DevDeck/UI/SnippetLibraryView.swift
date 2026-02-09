@@ -13,7 +13,7 @@ struct SnippetLibraryView: View {
     @State private var selectedLanguage: String = "All"
     @State private var sortAscending: Bool = true
     
-    let languages = ["All", "sh", "py", "applescript", "txt", "json"]
+    let languages = ["All", "sh", "py", "js", "ts", "java", "c", "sql", "html", "css", "json", "yaml", "applescript", "txt"]
     
     var filteredSnippets: [Snippet] {
         // If no filter, return all (sorted)
@@ -25,8 +25,11 @@ struct SnippetLibraryView: View {
     
     func sortSnippets(_ snippets: [Snippet]) -> [Snippet] {
         let sorted = snippets.sorted {
-            sortAscending ? $0.name.localizedStandardCompare($1.name) == .orderedAscending :
-                           $0.name.localizedStandardCompare($1.name) == .orderedDescending
+            if $0.isPinned != $1.isPinned {
+                return $0.isPinned && !$1.isPinned
+            }
+            return sortAscending ? $0.name.localizedStandardCompare($1.name) == .orderedAscending :
+                                 $0.name.localizedStandardCompare($1.name) == .orderedDescending
         }
         // Recursively sort children
         return sorted.map { snippet in
@@ -69,9 +72,17 @@ struct SnippetLibraryView: View {
         case "All": return "All Languages"
         case "sh": return "Shell Script"
         case "py": return "Python"
+        case "js": return "JavaScript"
+        case "ts": return "TypeScript"
+        case "java": return "Java"
+        case "c": return "C"
+        case "sql": return "SQL"
+        case "html": return "HTML"
+        case "css": return "CSS"
+        case "json": return "JSON"
+        case "yaml": return "YAML"
         case "applescript": return "AppleScript"
         case "txt": return "Plain Text"
-        case "json": return "JSON"
         default: return code
         }
     }
@@ -145,7 +156,7 @@ struct SnippetLibraryView: View {
             
             // List / Tree
             List(filteredSnippets, children: \.children) { snippet in
-                SnippetRow(snippet: snippet) {
+                SnippetRow(snippet: snippet, snippetManager: snippetManager) {
                     if !snippet.isDirectory {
                         editingSnippet = snippet
                     }
@@ -185,38 +196,29 @@ struct SnippetLibraryView: View {
 
 struct SnippetRow: View {
     let snippet: Snippet
+    @ObservedObject var snippetManager: SnippetManager
     var onTap: () -> Void
-    
-    var iconName: String {
-        if snippet.isDirectory { return "folder.fill" }
-        switch snippet.language {
-        case "sh": return "terminal.fill"
-        case "py": return "chevron.left.forwardslash.chevron.right"
-        case "json": return "curlybraces"
-        case "applescript": return "applescript.fill"
-        default: return "doc.text.fill"
-        }
-    }
-    
-    var iconColor: Color {
-        if snippet.isDirectory { return .blue }
-        switch snippet.language {
-        case "sh": return .green
-        case "py": return .yellow
-        case "json": return .orange
-        case "applescript": return .purple
-        default: return .secondary
-        }
-    }
     
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: iconName)
-                .foregroundColor(iconColor)
-                .font(.body)
+            if snippet.isDirectory {
+                Image(systemName: "folder.fill")
+                    .foregroundColor(.blue)
+                    .font(.body)
+            } else {
+                LanguageIconView(language: snippet.language)
+                    .frame(width: 18, height: 18)
+            }
             
             Text(snippet.name)
                 .font(.system(.body, design: .rounded))
+            
+            if snippet.isPinned {
+                Image(systemName: "pin.fill")
+                    .font(.caption)
+                    .foregroundColor(.orange)
+                    .rotationEffect(.degrees(45))
+            }
             
             Spacer()
         }
@@ -224,6 +226,13 @@ struct SnippetRow: View {
         .contentShape(Rectangle())
         .onTapGesture {
             onTap()
+        }
+        .contextMenu {
+            Button {
+                snippetManager.togglePin(for: snippet)
+            } label: {
+                Label(snippet.isPinned ? "Unpin Snippet" : "Pin Snippet", systemImage: snippet.isPinned ? "pin.slash" : "pin")
+            }
         }
         .onDrag {
             let data: [String: String] = [

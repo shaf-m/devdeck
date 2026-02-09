@@ -51,7 +51,7 @@ struct RadialMenuView: View {
                             )
                     )
                     .shadow(color: .black.opacity(0.5), radius: 30, x: 0, y: 15) // Deep shadow
-                    .padding(20)
+                    .padding(5)
                     .opacity(isVisible ? 1 : 0)
                     .scaleEffect(isVisible ? 1 : 0.9)
                     .animation(.easeOut(duration: 0.25), value: isVisible)

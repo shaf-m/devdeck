@@ -78,19 +78,27 @@ struct ProfileDetailView: View {
     var body: some View {
         VStack {
             List {
-                Section(header: Text("Linked Apps")) {
-                    ForEach(profile.associatedBundleIds, id: \.self) { bundleId in
-                        Text(bundleId)
-                            .font(.system(.caption, design: .monospaced))
-                    }
-                    .onDelete(perform: deleteBundleId)
-                    
-                    HStack {
-                        TextField("com.example.app", text: $newBundleId)
-                        Button("Add") {
-                            addBundleId()
+                if profile.name.trimmingCharacters(in: .whitespacesAndNewlines).caseInsensitiveCompare("Global") != .orderedSame {
+                    Section(header: Text("Linked Apps")) {
+                        ForEach(profile.associatedBundleIds, id: \.self) { bundleId in
+                            Text(bundleId)
+                                .font(.system(.caption, design: .monospaced))
                         }
-                        .disabled(newBundleId.isEmpty)
+                        .onDelete(perform: deleteBundleId)
+                        
+                        HStack {
+                            TextField("com.example.app", text: $newBundleId)
+                            Button("Add") {
+                                addBundleId()
+                            }
+                            .disabled(newBundleId.isEmpty)
+                        }
+                    }
+                } else {
+                    Section(header: Text("Global Profile")) {
+                        Text("This is your default profile. It will be active when DevDeck is triggered on an app that doesn't have a specific profile assigned.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
                     }
                 }
                 

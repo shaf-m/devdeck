@@ -250,103 +250,124 @@ struct MacroManagerView: View {
     
     private func linkedAppsSection(profile: Profile, index: Int) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                VStack(alignment: .leading) {
-                    Text("Linked Apps")
+            
+            if profile.name.trimmingCharacters(in: .whitespacesAndNewlines).caseInsensitiveCompare("Global") == .orderedSame {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Global Profile")
                         .font(.title3)
                         .bold()
-                    Text("Profile becomes active when these apps are focused")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                Button(action: { showAppPicker = true }) {
-                    HStack {
-                        Image(systemName: "plus")
-                        Text("Link App")
+                    
+                    HStack(spacing: 12) {
+                        Image(systemName: "globe")
+                            .font(.largeTitle)
+                            .foregroundColor(.secondary.opacity(0.3))
+                        Text("This is your default profile. It will be active when DevDeck is triggered on an app that doesn't have a specific profile assigned.")
+                            .foregroundColor(.secondary)
                     }
-                    .font(.body)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primary)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(8)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
-                    )
-                    .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+                    .cornerRadius(12)
                 }
-                .buttonStyle(.plain)
-                .popover(isPresented: $showAppPicker) {
-                    AppSelectionView { bundleId in
-                        if !profileManager.profiles[index].associatedBundleIds.contains(bundleId) {
-                            withAnimation {
-                                profileManager.profiles[index].associatedBundleIds.append(bundleId)
-                            }
+            } else {
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text("Linked Apps")
+                            .font(.title3)
+                            .bold()
+                        Text("Profile becomes active when these apps are focused")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Button(action: { showAppPicker = true }) {
+                        HStack {
+                            Image(systemName: "plus")
+                            Text("Link App")
                         }
-                        showAppPicker = false
+                        .font(.body)
+                        .fontWeight(.medium)
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color(NSColor.controlBackgroundColor))
+                        .cornerRadius(8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                        )
+                        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+                    }
+                    .buttonStyle(.plain)
+                    .popover(isPresented: $showAppPicker) {
+                        AppSelectionView { bundleId in
+                            if !profileManager.profiles[index].associatedBundleIds.contains(bundleId) {
+                                withAnimation {
+                                    profileManager.profiles[index].associatedBundleIds.append(bundleId)
+                                }
+                            }
+                            showAppPicker = false
+                        }
                     }
                 }
-            }
-            
-            if profile.associatedBundleIds.isEmpty {
-                HStack(spacing: 12) {
-                    Image(systemName: "app.dashed")
-                        .font(.largeTitle)
-                        .foregroundColor(.secondary.opacity(0.3))
-                    Text("No apps linked. This profile will only be active when selected manually.")
-                        .foregroundColor(.secondary)
-                }
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(NSColor.controlBackgroundColor))
-                .cornerRadius(12)
-            } else {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 180))], spacing: 12) {
-                    ForEach(profile.associatedBundleIds, id: \.self) { bundleId in
-                        HStack {
-                            if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) {
-                                Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
-                                    .resizable()
-                                    .frame(width: 32, height: 32)
-                            } else {
-                                Image(systemName: "app")
-                                    .frame(width: 32, height: 32)
-                            }
-                            
-                            Text(nameForBundleId(bundleId))
-                                .font(.body)
-                                .fontWeight(.medium)
-                                .lineLimit(1)
-                                .truncationMode(.tail)
-                            
-                            Spacer()
-                            
-                            Button(action: {
-                                withAnimation {
-                                    profileManager.profiles[index].associatedBundleIds.removeAll(where: { $0 == bundleId })
+                
+                if profile.associatedBundleIds.isEmpty {
+                    HStack(spacing: 12) {
+                        Image(systemName: "app.dashed")
+                            .font(.largeTitle)
+                            .foregroundColor(.secondary.opacity(0.3))
+                        Text("No apps linked. This profile will only be active when selected manually.")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .cornerRadius(12)
+                } else {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 180))], spacing: 12) {
+                        ForEach(profile.associatedBundleIds, id: \.self) { bundleId in
+                            HStack {
+                                if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) {
+                                    Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+                                        .resizable()
+                                        .frame(width: 32, height: 32)
+                                } else {
+                                    Image(systemName: "app")
+                                        .frame(width: 32, height: 32)
                                 }
-                            }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.secondary)
+                                
+                                Text(nameForBundleId(bundleId))
+                                    .font(.body)
+                                    .fontWeight(.medium)
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    withAnimation {
+                                        profileManager.profiles[index].associatedBundleIds.removeAll(where: { $0 == bundleId })
+                                    }
+                                }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.secondary)
+                                }
+                                .buttonStyle(.plain)
+                                .onHover { inside in
+                                    if inside { NSCursor.pointingHand.push() }
+                                    else { NSCursor.pop() }
+                                }
                             }
-                            .buttonStyle(.plain)
-                            .onHover { inside in
-                                if inside { NSCursor.pointingHand.push() }
-                                else { NSCursor.pop() }
-                            }
+                            .padding(14)
+                            .background(Color(NSColor.controlBackgroundColor))
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
+                            )
                         }
-                        .padding(14)
-                        .background(Color(NSColor.controlBackgroundColor))
-                        .cornerRadius(10)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
-                        )
                     }
                 }
             }

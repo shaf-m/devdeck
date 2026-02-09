@@ -14,7 +14,7 @@ struct LanguagePicker: View {
                 Button(action: {
                     selection = lang.1
                 }) {
-                    HStack {
+                    HStack(spacing: 12) {
                         if selection == lang.1 {
                             Image(systemName: "checkmark")
                         }
@@ -26,7 +26,7 @@ struct LanguagePicker: View {
                 }
             }
         } label: {
-            HStack(spacing: 8) {
+            HStack(spacing: 12) {
                 LanguageIconView(language: selection, size: CGSize(width: 16, height: 16))
                     .frame(width: 16, height: 16)
                     .clipped()

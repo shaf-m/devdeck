@@ -64,21 +64,25 @@ struct SnippetDetailView: View {
                         .font(.headline)
                         .foregroundColor(.secondary)
                     
-                    VStack(alignment: .leading, spacing: 10) {
-                        TextField("Name", text: $name)
-                            .textFieldStyle(.roundedBorder)
-                            .font(.headline)
+                    VStack(alignment: .leading, spacing: 16) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Name")
+                                .font(.callout)
+                                .foregroundColor(.secondary)
+                            TextField("Enter snippet name...", text: $name)
+                                .textFieldStyle(.roundedBorder)
+                        }
                         
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: 10) {
                             Text("Language")
-                                .font(.caption)
+                                .font(.callout)
                                 .foregroundColor(.secondary)
                             LanguagePicker(selection: $language, languages: languages.map { ($0.0, $0.1) })
                         }
                         
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: 6) {
                             Text("Notes")
-                                .font(.caption)
+                                .font(.callout)
                                 .foregroundColor(.secondary)
                             TextEditor(text: $notes)
                                 .font(.body)

@@ -7,7 +7,7 @@ struct DevDeckApp: App {
     @StateObject var coordinator = AppCoordinator()
     
     var body: some Scene {
-        WindowGroup("Macro Manager", id: "dashboard") {
+        Window("Macro Manager", id: "dashboard") {
             MacroManagerView(profileManager: coordinator.profileManager)
         }
         

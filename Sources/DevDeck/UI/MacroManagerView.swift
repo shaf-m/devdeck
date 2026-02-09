@@ -167,7 +167,6 @@ struct MacroManagerView: View {
                             .frame(width: 450, height: 450)
                             .scaleEffect(0.85)
                             .background(Color.clear)
-                            .environment(\.colorScheme, .dark)
                     }
                     .padding()
                 }

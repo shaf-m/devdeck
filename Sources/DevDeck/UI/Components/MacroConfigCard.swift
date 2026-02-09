@@ -132,7 +132,7 @@ struct MacroConfigCard: View {
         .shadow(color: Color.black.opacity(0.15), radius: 6, x: 0, y: 3)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.white.opacity(0.2), lineWidth: 0.5) // Subtle highlight
+                .stroke(Color.primary.opacity(0.1), lineWidth: 0.5) // Subtle highlight
         )
     }
     

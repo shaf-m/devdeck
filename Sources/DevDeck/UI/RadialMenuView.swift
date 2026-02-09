@@ -39,19 +39,19 @@ struct RadialMenuView: View {
                 // 1. Circular Glass Background (The "Stage")
                 Circle()
                     .fill(.ultraThinMaterial)
-                    .background(Circle().fill(Color.black.opacity(0.6))) // Darker backing
+                    .background(Circle().fill(Color(NSColor.windowBackgroundColor).opacity(0.5))) // Adaptive backing
                     .overlay(
                         Circle()
                             .stroke(
                                 LinearGradient(
-                                    gradient: Gradient(colors: [.white.opacity(0.2), .white.opacity(0.05)]),
+                                    gradient: Gradient(colors: [.primary.opacity(0.1), .primary.opacity(0.05)]),
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 ),
                                 lineWidth: 1
                             )
                     )
-                    .shadow(color: .black.opacity(0.5), radius: 15, x: 0, y: 5) // Reduced shadow to fit 500x500
+                    .shadow(color: Color.black.opacity(0.2), radius: 15, x: 0, y: 5) // Reduced shadow
                     .padding(circlePadding)
                     .opacity(isVisible ? 1 : 0)
                     .scaleEffect(isVisible ? 1 : 0.9)
@@ -61,12 +61,12 @@ struct RadialMenuView: View {
                 ZStack {
                     Circle()
                         .fill(.ultraThinMaterial)
-                        .background(Circle().fill(Color.black.opacity(0.5)))
+                        .background(Circle().fill(Color(NSColor.controlBackgroundColor).opacity(0.5)))
                         .frame(width: 140, height: 140) // Larger Hub
                         .overlay(
-                            Circle().stroke(.white.opacity(0.1), lineWidth: 1)
+                            Circle().stroke(.primary.opacity(0.1), lineWidth: 1)
                         )
-                        .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
+                        .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 5)
                     
                     VStack(spacing: 8) {
                         if let icon = getProfileIcon() {
@@ -84,14 +84,14 @@ struct RadialMenuView: View {
                         
                         Text(displayProfile?.name ?? "Global")
                             .font(.system(size: 14, weight: .bold, design: .monospaced)) // SF Mono
-                            .foregroundColor(.white.opacity(0.9))
+                            .foregroundColor(.primary.opacity(0.9))
                         
                         HStack(spacing: 4) {
                             Text("switch")
                             Image(systemName: "chevron.right")
                         }
                         .font(.system(size: 10, design: .monospaced))
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary)
                     }
                 }
                 .contentShape(Circle())

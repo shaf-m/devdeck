@@ -1,0 +1,71 @@
+[
+  {
+    "name": "Global",
+    "macros": [
+      {
+        "label": "Safari",
+        "type": "shellScript",
+        "value": "open -a Safari",
+        "iconName": "safari"
+      },
+      {
+        "label": "Space Left",
+        "type": "keystroke",
+        "value": "ctrl+left",
+        "iconName": "arrow.left.circle"
+      },
+      {
+        "label": "Space Right",
+        "type": "keystroke",
+        "value": "ctrl+right",
+        "iconName": "arrow.right.circle"
+      },
+      {
+        "label": "Finder",
+        "type": "keystroke",
+        "value": "command+space",
+        "iconName": "magnifyingglass"
+      },
+      {
+        "label": "Terminal",
+        "type": "shellScript",
+        "value": "open -a Terminal",
+        "iconName": "terminal.fill"
+      }
+    ]
+  },
+  {
+    "name": "VS Code",
+    "macros": [
+      {
+        "label": "Command Palette",
+        "type": "keystroke",
+        "value": "command+shift+p",
+        "iconName": "terminal"
+      },
+      {
+        "label": "Format",
+        "type": "keystroke",
+        "value": "shift+option+f",
+        "iconName": "doc.text"
+      }
+    ]
+  },
+  {
+    "name": "Browser",
+    "macros": [
+      {
+        "label": "New Tab",
+        "type": "keystroke",
+        "value": "command+t",
+        "iconName": "plus.square"
+      },
+      {
+        "label": "DevTools",
+        "type": "keystroke",
+        "value": "command+option+i",
+        "iconName": "hammer"
+      }
+    ]
+  }
+]

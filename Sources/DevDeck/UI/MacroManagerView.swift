@@ -233,20 +233,20 @@ struct MacroManagerView: View {
                 .background(Color(NSColor.controlBackgroundColor))
                 .cornerRadius(12)
             } else {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 140))], spacing: 12) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 180))], spacing: 12) {
                     ForEach(profile.associatedBundleIds, id: \.self) { bundleId in
                         HStack {
                             if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) {
                                 Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
                                     .resizable()
-                                    .frame(width: 24, height: 24)
+                                    .frame(width: 32, height: 32)
                             } else {
                                 Image(systemName: "app")
-                                    .frame(width: 24, height: 24)
+                                    .frame(width: 32, height: 32)
                             }
                             
                             Text(nameForBundleId(bundleId))
-                                .font(.caption)
+                                .font(.body)
                                 .fontWeight(.medium)
                                 .lineLimit(1)
                                 .truncationMode(.tail)
@@ -267,7 +267,7 @@ struct MacroManagerView: View {
                                 else { NSCursor.pop() }
                             }
                         }
-                        .padding(10)
+                        .padding(14)
                         .background(Color(NSColor.controlBackgroundColor))
                         .cornerRadius(10)
                         .overlay(

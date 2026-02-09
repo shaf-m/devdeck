@@ -26,7 +26,6 @@ struct ShortcutRecorder: View {
                         Image(systemName: "keyboard")
                         Text("Record Shortcut")
                     } else {
-                        Image(systemName: "command")
                         Text(formatDisplayString(shortcutValue))
                     }
                 }

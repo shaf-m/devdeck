@@ -18,5 +18,25 @@
     <true/>
     <key>NSAppleEventsUsageDescription</key>
     <string>DevDeck needs to control System Events to execute macros like simulating keystrokes (e.g. Command+Space).</string>
+    <key>UTExportedTypeDeclarations</key>
+    <array>
+        <dict>
+            <key>UTTypeIdentifier</key>
+            <string>com.shafm.devdeck.backup</string>
+            <key>UTTypeDescription</key>
+            <string>DevDeck Backup</string>
+            <key>UTTypeConformsTo</key>
+            <array>
+                <string>public.json</string>
+            </array>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <array>
+                    <string>json</string>
+                </array>
+            </dict>
+        </dict>
+    </array>
 </dict>
 </plist>

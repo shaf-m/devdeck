@@ -30,6 +30,16 @@ struct MenuBarView: View {
             openWindow(id: "dashboard")
             NSApp.activate(ignoringOtherApps: true)
         }
+        
+        Divider()
+        
+        Button("Import Backup...") {
+            ImportExportManager.shared.presentImportPanel()
+        }
+        Button("Export Backup...") {
+            ImportExportManager.shared.presentExportPanel()
+        }
+        
         Divider()
         Button("Quit") {
             NSApplication.shared.terminate(nil)

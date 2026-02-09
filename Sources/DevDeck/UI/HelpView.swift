@@ -3,73 +3,154 @@ import SwiftUI
 struct HelpView: View {
     @Environment(\.dismiss) var dismiss
     @State private var showOnboarding = false
+    @State private var selection: HelpTopic? = .gettingStarted
+    
+    enum HelpTopic: String, CaseIterable, Identifiable {
+        case gettingStarted
+        case creatingMacros
+        case contextSwitching
+        case radialMenu
+        case troubleshooting
+        
+        var id: String { rawValue }
+        
+        var title: String {
+            switch self {
+            case .gettingStarted: return "Getting Started"
+            case .creatingMacros: return "Creating Macros"
+            case .contextSwitching: return "Context Switching"
+            case .radialMenu: return "The Radial Menu"
+            case .troubleshooting: return "Overlay Not Showing?"
+            }
+        }
+        
+        var icon: String {
+            switch self {
+            case .gettingStarted: return "flag.circle.fill"
+            case .creatingMacros: return "plus.square.fill"
+            case .contextSwitching: return "arrow.triangle.2.circlepath.circle.fill"
+            case .radialMenu: return "circle.circle.fill"
+            case .troubleshooting: return "exclamationmark.triangle.fill"
+            }
+        }
+        
+        var color: Color {
+            switch self {
+            case .gettingStarted: return .orange
+            case .creatingMacros: return .green
+            case .contextSwitching: return .blue
+            case .radialMenu: return .purple
+            case .troubleshooting: return .yellow
+            }
+        }
+    }
     
     var body: some View {
         NavigationSplitView {
-            List {
+            List(selection: $selection) {
                 Section(header: Text("Quick Start")) {
-                    Button(action: { showOnboarding = true }) {
-                        Label("Replay Welcome Tour", systemImage: "arrow.counterclockwise.circle")
+                    NavigationLink(value: HelpTopic.gettingStarted) {
+                        Label(HelpTopic.gettingStarted.title, systemImage: "flag.circle")
                     }
-                    .buttonStyle(.plain)
                 }
                 
-                Section(header: Text("Tutorials")) {
-                    NavigationLink(destination: TutorialDetailView(
-                        title: "Creating Macros",
-                        icon: "plus.square.fill",
-                        color: .green,
-                        content: "To create a macro, navigate to a profile and click the **+ Add Macro** button.\n\nChoose a label, an icon (SF Symbol name), and the type of action you want to perform:\n• **Keystroke**: Simulate key presses (e.g., Cmd+C)\n• **Text/Paste**: Insert snippets of code\n• **Shell Script**: Run terminal commands\n• **Open URL**: Launch websites"
-                    )) {
-                        Label("Creating Macros", systemImage: "plus.square")
+                Section(header: Text("Guides")) {
+                    NavigationLink(value: HelpTopic.creatingMacros) {
+                        Label(HelpTopic.creatingMacros.title, systemImage: "plus.square")
                     }
-                    
-                    NavigationLink(destination: TutorialDetailView(
-                        title: "Context Switching",
-                        icon: "arrow.triangle.2.circlepath.circle.fill",
-                        color: .blue,
-                        content: "DevDeck detects the active window.\n\nYou can link profiles to specific applications by adding their **Bundle IDs** (e.g., `com.apple.Safari`) in the Profile Details view.\n\nWhen you switch focus to that app, DevDeck automatically activates the corresponding profile."
-                    )) {
-                        Label("Context Switching", systemImage: "arrow.triangle.2.circlepath")
+                    NavigationLink(value: HelpTopic.contextSwitching) {
+                        Label(HelpTopic.contextSwitching.title, systemImage: "arrow.triangle.2.circlepath")
                     }
-                    
-                    NavigationLink(destination: TutorialDetailView(
-                        title: "The Radial Menu",
-                        icon: "circle.circle.fill",
-                        color: .purple,
-                        content: "The overlay window appears when you trigger it (Default: `Cmd` long press or configured shortcut).\n\nUse your mouse to hover over items towards the edges of the circle to select them. Release the mouse button or key to execute."
-                    )) {
-                        Label("Using the Radial Menu", systemImage: "circle.circle")
+                    NavigationLink(value: HelpTopic.radialMenu) {
+                        Label(HelpTopic.radialMenu.title, systemImage: "circle.circle")
                     }
                 }
                 
                 Section(header: Text("Troubleshooting")) {
-                    NavigationLink(destination: TutorialDetailView(
-                        title: "Overlay Not Showing?",
-                        icon: "exclamationmark.triangle.fill",
-                        color: .yellow,
-                        content: "**1. Check Permissions**: Ensure Accessibility permissions are enabled for DevDeck in System Settings.\n\n**2. Check App Status**: Ensure the application is running (icon in menu bar).\n\n**3. Restart App**: Sometimes a restart is required after granting permissions."
-                    )) {
-                        Label("Overlay Not Showing?", systemImage: "exclamationmark.triangle")
+                    NavigationLink(value: HelpTopic.troubleshooting) {
+                        Label(HelpTopic.troubleshooting.title, systemImage: "exclamationmark.triangle")
                     }
                 }
             }
             .listStyle(.sidebar)
-            .navigationTitle("Help Topics")
+            .navigationTitle("Help")
         } detail: {
-            VStack(spacing: 20) {
-                Image(systemName: "book.fill")
-                    .font(.system(size: 60))
-                    .foregroundColor(.secondary.opacity(0.2))
-                Text("Select a topic to view details")
-                    .font(.title2)
+            if let selection = selection {
+                switch selection {
+                case .gettingStarted:
+                     VStack(spacing: 30) {
+                         Image(systemName: "flag.circle.fill")
+                             .font(.system(size: 60))
+                             .foregroundColor(.orange)
+                         
+                         Text("Welcome to DevDeck")
+                             .font(.largeTitle)
+                             .bold()
+                         
+                         Text("Get up and running quickly by replaying the welcome tour.")
+                             .font(.title2)
+                             .foregroundColor(.secondary)
+                             .multilineTextAlignment(.center)
+                         
+                         Button(action: { showOnboarding = true }) {
+                             Label("Start Welcome Tour", systemImage: "play.fill")
+                                 .font(.headline)
+                                 .padding(.horizontal, 20)
+                                 .padding(.vertical, 10)
+                                 .foregroundColor(.white)
+                                 .background(Color.blue)
+                                 .cornerRadius(10)
+                         }
+                         .buttonStyle(.plain)
+                         .shadow(radius: 5)
+                         
+                         Spacer()
+                     }
+                     .padding(50)
+                case .creatingMacros:
+                    TutorialDetailView(
+                        title: selection.title,
+                        icon: selection.icon,
+                        color: selection.color,
+                        content: "To create a macro, navigate to a profile and click the **+ Add Macro** button.\n\nChoose a label, an icon (SF Symbol name), and the type of action you want to perform:\n• **Keystroke**: Simulate key presses (e.g., Cmd+C)\n• **Text/Paste**: Insert snippets of code\n• **Shell Script**: Run terminal commands\n• **Open URL**: Launch websites"
+                    )
+                case .contextSwitching:
+                    TutorialDetailView(
+                        title: selection.title,
+                        icon: selection.icon,
+                        color: selection.color,
+                        content: "DevDeck detects the active window.\n\nYou can link profiles to specific applications by adding their **Bundle IDs** (e.g., `com.apple.Safari`) in the Profile Details view.\n\nWhen you switch focus to that app, DevDeck automatically activates the corresponding profile."
+                    )
+                case .radialMenu:
+                    TutorialDetailView(
+                        title: selection.title,
+                        icon: selection.icon,
+                        color: selection.color,
+                        content: "The overlay window appears when you trigger it (Default: `Cmd` long press or configured shortcut).\n\nUse your mouse to hover over items towards the edges of the circle to select them. Release the mouse button or key to execute."
+                    )
+                case .troubleshooting:
+                    TutorialDetailView(
+                        title: selection.title,
+                        icon: selection.icon,
+                        color: selection.color,
+                        content: "**1. Check Permissions**: Ensure Accessibility permissions are enabled for DevDeck in System Settings.\n\n**2. Check App Status**: Ensure the application is running (icon in menu bar).\n\n**3. Restart App**: Sometimes a restart is required after granting permissions."
+                    )
+                }
+            } else {
+                Text("Select a topic")
                     .foregroundColor(.secondary)
             }
         }
-        .frame(minWidth: 700, minHeight: 500)
+        .frame(minWidth: 800, minHeight: 600)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Close") { dismiss() }
+            ToolbarItem(placement: .confirmationAction) {
+                Button(action: { dismiss() }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.secondary)
+                        .font(.title2)
+                }
+                .buttonStyle(.plain)
+                .help("Close")
             }
         }
         .sheet(isPresented: $showOnboarding) {

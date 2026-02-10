@@ -27,6 +27,9 @@ struct MacroManagerView: View {
     // Profile Renaming
     @State private var isEditingProfileName = false
     
+    // New Macro Tracking
+    @State private var newMacroID: UUID?
+    
     // Helper to get app name
     func nameForBundleId(_ bundleId: String) -> String {
         if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) {
@@ -144,9 +147,10 @@ struct MacroManagerView: View {
                 QuickAddSidebarView(onAdd: { macro in
                     if let selected = selectedProfile,
                        let index = profileManager.profiles.firstIndex(where: { $0.id == selected.id }) {
-                        withAnimation {
-                            profileManager.profiles[index].macros.append(macro)
-                        }
+                            withAnimation {
+                                profileManager.profiles[index].macros.append(macro)
+                                highlightNewMacro(macro)
+                            }
                     }
                 }, onClose: {
                     showQuickAdd = false
@@ -457,6 +461,7 @@ struct MacroManagerView: View {
                         )
                         withAnimation {
                             profileManager.profiles[index].macros.append(newMacro)
+                            highlightNewMacro(newMacro)
                         }
                     }) {
                         GradientMenuLabel(text: "Custom Macro", systemImage: "plus.square")
@@ -496,10 +501,19 @@ struct MacroManagerView: View {
                 } else {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 280))], spacing: 16) {
                         ForEach($profileManager.profiles[index].macros) { $macro in
-                            MacroConfigCard(macro: $macro) {
-                                macroToDelete = macro
-                                showDeleteConfirmation = true
-                            }
+                            MacroConfigCard(
+                                macro: $macro,
+                                onDelete: {
+                                    macroToDelete = macro
+                                    showDeleteConfirmation = true
+                                },
+                                onEdit: {
+                                    if newMacroID == macro.id {
+                                        withAnimation { newMacroID = nil }
+                                    }
+                                },
+                                isNew: newMacroID == macro.id
+                            )
                             .contextMenu {
                                 Button(role: .destructive) {
                                     if let mIndex = profileManager.profiles[index].macros.firstIndex(where: { $0.id == $macro.id }) {
@@ -552,6 +566,7 @@ struct MacroManagerView: View {
                                     )
                                     withAnimation {
                                         profileManager.profiles[index].macros.append(newMacro)
+                                        highlightNewMacro(newMacro)
                                     }
                                 }
                                 return
@@ -571,6 +586,7 @@ struct MacroManagerView: View {
                                     )
                                     withAnimation {
                                         profileManager.profiles[index].macros.append(newMacro)
+                                        highlightNewMacro(newMacro)
                                     }
                                 }
                                 return
@@ -593,6 +609,7 @@ struct MacroManagerView: View {
                             )
                             withAnimation {
                                 profileManager.profiles[index].macros.append(newMacro)
+                                highlightNewMacro(newMacro)
                             }
                         }
                     }
@@ -619,6 +636,20 @@ struct MacroManagerView: View {
                 }
             } message: {
                 Text("Are you sure you want to delete '\(macroToDelete?.label ?? "this macro")'? This action cannot be undone.")
+            }
+        }
+    }
+    
+
+    
+    private func highlightNewMacro(_ macro: Macro) {
+        self.newMacroID = macro.id
+        // Auto-hide after 60 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 60) {
+            if self.newMacroID == macro.id {
+                withAnimation {
+                    self.newMacroID = nil
+                }
             }
         }
     }

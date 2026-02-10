@@ -4,6 +4,9 @@ struct MacroConfigCard: View {
     @Binding var macro: Macro
     
     var onDelete: () -> Void
+    var onEdit: (() -> Void)? = nil
+    var isNew: Bool = false
+    var onInteract: (() -> Void)? = nil
     
     // SF Symbols for Icon Picker (Simplified list for now)
     let availableIcons = ["terminal", "safari", "folder", "play.fill", "stop.fill", "gear", "command", "globe", "cpu", "keyboard", "text.alignleft"]
@@ -16,6 +19,10 @@ struct MacroConfigCard: View {
                 Image(systemName: "line.3.horizontal")
                     .foregroundColor(.secondary.opacity(0.5))
                     .font(.system(size: 20))
+                    .onTapGesture { onInteract?() }
+                    .onChange(of: macro) { _ in
+                        onEdit?()
+                    }
                     .frame(width: 24)
                     .accessibilityLabel("Drag to Reorder")
                 
@@ -44,6 +51,23 @@ struct MacroConfigCard: View {
                     TextField("Macro Name", text: $macro.label)
                         .textFieldStyle(.plain)
                         .font(.headline)
+                }
+                
+                if isDefaultMacro {
+                    Text("NEW")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(
+                            LinearGradient(
+                                colors: [.blue, .purple],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .clipShape(Capsule())
+                        .help("This is a new macro with default values")
                 }
                 
                 Spacer()
@@ -131,8 +155,22 @@ struct MacroConfigCard: View {
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.15), radius: 6, x: 0, y: 3)
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.primary.opacity(0.1), lineWidth: 0.5) // Subtle highlight
+            ZStack {
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                
+                if isNew || isDefaultMacro {
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(
+                            LinearGradient(
+                                colors: [.blue, .purple],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 3
+                        )
+                }
+            }
         )
     }
     
@@ -143,5 +181,11 @@ struct MacroConfigCard: View {
         case .url: return "https://example.com"
         case .text: return "Text to paste..."
         }
+    }
+    
+    private var isDefaultMacro: Bool {
+        return macro.label == "New Macro" && 
+               macro.value == "echo 'Hello World'" && 
+               macro.type == .shellScript
     }
 }

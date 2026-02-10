@@ -126,7 +126,7 @@ struct HelpView: View {
                         title: selection.title,
                         icon: selection.icon,
                         color: selection.color,
-                        content: "The overlay window appears when you trigger it (Default: `Cmd` long press or configured shortcut).\n\nUse your mouse to hover over items towards the edges of the circle to select them. Release the mouse button or key to execute."
+                        content: "The overlay window appears when you trigger it (Long press the tilde ~ key).\n\nUse your mouse to hover over items towards the edges of the circle to select them. Click any macro in the swatch to execute it."
                     )
                 case .troubleshooting:
                     TutorialDetailView(

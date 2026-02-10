@@ -12,11 +12,18 @@ class AppCoordinator: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     private var shortcutMonitor: Any?
+    private var menuBarManager: MenuBarManager?
     
     init() {
+        // AppCoordinator is a root class conforming to ObservableObject, no super.init needed.
+        
         setupBindings()
         createWindow()
         setupShortcutMonitor()
+        
+        // Initialize MenuBarManager after a slight delay or dispatch main to ensure App is ready?
+        // Actually safe to do here.
+        self.menuBarManager = MenuBarManager(coordinator: self)
     }
     
     // ... (rest of class)

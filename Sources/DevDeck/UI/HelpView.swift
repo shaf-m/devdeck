@@ -10,6 +10,7 @@ struct HelpView: View {
         case creatingMacros
         case contextSwitching
         case radialMenu
+        case menuBarIcon
         case troubleshooting
         
         var id: String { rawValue }
@@ -20,6 +21,7 @@ struct HelpView: View {
             case .creatingMacros: return "Creating Macros"
             case .contextSwitching: return "Context Switching"
             case .radialMenu: return "The Radial Menu"
+            case .menuBarIcon: return "Menu Bar Icon"
             case .troubleshooting: return "Overlay Not Showing?"
             }
         }
@@ -30,6 +32,7 @@ struct HelpView: View {
             case .creatingMacros: return "plus.square.fill"
             case .contextSwitching: return "arrow.triangle.2.circlepath.circle.fill"
             case .radialMenu: return "circle.circle.fill"
+            case .menuBarIcon: return "menubar.rectangle"
             case .troubleshooting: return "exclamationmark.triangle.fill"
             }
         }
@@ -40,6 +43,7 @@ struct HelpView: View {
             case .creatingMacros: return .green
             case .contextSwitching: return .blue
             case .radialMenu: return .purple
+            case .menuBarIcon: return .gray
             case .troubleshooting: return .yellow
             }
         }
@@ -63,6 +67,9 @@ struct HelpView: View {
                     }
                     NavigationLink(value: HelpTopic.radialMenu) {
                         Label(HelpTopic.radialMenu.title, systemImage: "circle.circle")
+                    }
+                    NavigationLink(value: HelpTopic.menuBarIcon) {
+                        Label(HelpTopic.menuBarIcon.title, systemImage: "menubar.rectangle")
                     }
                 }
                 
@@ -119,7 +126,7 @@ struct HelpView: View {
                         title: selection.title,
                         icon: selection.icon,
                         color: selection.color,
-                        content: "DevDeck detects the active window.\n\nYou can link profiles to specific applications by adding their **Bundle IDs** (e.g., `com.apple.Safari`) in the Profile Details view.\n\nWhen you switch focus to that app, DevDeck automatically activates the corresponding profile."
+                        content: "DevDeck detects the active window.\n\nYou can link profiles to specific applications by adding their names in the Profile Details view.\n\nWhen you switch focus to that app, DevDeck automatically activates the corresponding profile."
                     )
                 case .radialMenu:
                     TutorialDetailView(
@@ -127,6 +134,13 @@ struct HelpView: View {
                         icon: selection.icon,
                         color: selection.color,
                         content: "The overlay window appears when you trigger it (Long press the tilde ~ key).\n\nUse your mouse to hover over items towards the edges of the circle to select them. Click any macro in the swatch to execute it."
+                    )
+                case .menuBarIcon:
+                    TutorialDetailView(
+                        title: selection.title,
+                        icon: selection.icon,
+                        color: selection.color,
+                        content: "The DevDeck icon in your menu bar allows for quick control:\n\n• **Left Click**: Instantly toggle the overlay on/off.\n• **Right Click** (or Ctrl+Click): Open the menu to access the Dashboard, Import/Export, and Quit."
                     )
                 case .troubleshooting:
                     TutorialDetailView(

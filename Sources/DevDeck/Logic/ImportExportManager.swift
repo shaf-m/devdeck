@@ -13,8 +13,8 @@ struct SnippetExportData: Codable {
 }
 
 struct BackupData: Codable {
-    let version: Int = 1
-    let timestamp: Date = Date()
+    var version: Int = 1
+    var timestamp: Date = Date()
     let profiles: [Profile]
     let snippets: [SnippetExportData]
 }

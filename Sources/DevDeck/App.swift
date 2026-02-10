@@ -11,38 +11,7 @@ struct DevDeckApp: App {
             MacroManagerView(profileManager: coordinator.profileManager)
         }
         .defaultSize(width: 1000, height: 800)
+        .handlesExternalEvents(matching: ["dashboard"])
         
-        MenuBarExtra("DevDeck", systemImage: "circle.circle.fill") {
-            MenuBarView(coordinator: coordinator)
-        }
-    }
-}
-
-struct MenuBarView: View {
-    @ObservedObject var coordinator: AppCoordinator
-    @Environment(\.openWindow) var openWindow
-    
-    var body: some View {
-        Button("Show Overlay") {
-            coordinator.showOverlayManually()
-        }
-        Button("Dashboard...") {
-            openWindow(id: "dashboard")
-            NSApp.activate(ignoringOtherApps: true)
-        }
-        
-        Divider()
-        
-        Button("Import Backup...") {
-            ImportExportManager.shared.presentImportPanel()
-        }
-        Button("Export Backup...") {
-            ImportExportManager.shared.presentExportPanel()
-        }
-        
-        Divider()
-        Button("Quit") {
-            NSApplication.shared.terminate(nil)
-        }
     }
 }

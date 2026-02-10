@@ -20,7 +20,7 @@ struct OnboardingView: View {
                     case 1:
                         ConceptPage(
                             title: "The Overlay",
-                            description: "Hold the tilde ~ key to peek at your shortcuts. Use the radial menu for quick access.",
+                            description: "Hold the tilde ~ key or click the menu bar icon to peek at your shortcuts. Use the radial menu for quick access.",
                             imageName: "circle.circle",
                             color: .blue
                         )

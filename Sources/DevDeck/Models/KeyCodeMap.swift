@@ -35,6 +35,7 @@ struct KeyCodeMap {
         case "enter", "return": return 36
         case "esc", "escape": return 53
         case "tab": return 48
+        case "`", "~": return 50
             
         // Number keys
         case "1": return 18

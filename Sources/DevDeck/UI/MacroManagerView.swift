@@ -13,6 +13,7 @@ struct MacroManagerView: View {
     
     // UI State
     @State private var showSnippetLibrary = false
+    @State private var showQuickAdd = false
     
     // Drag & Drop
     @State private var draggingMacro: Macro?
@@ -135,16 +136,33 @@ struct MacroManagerView: View {
             ))
             .interactiveDismissDisabled()
         }
-        .inspector(isPresented: $showSnippetLibrary) {
-            SnippetLibraryView()
-                .frame(minWidth: 250)
-                .toolbar {
-                    ToolbarItem(placement: .primaryAction) {
-                        Button(action: { showSnippetLibrary = false }) {
-                            Label("Close", systemImage: "sidebar.right")
+        .inspector(isPresented: Binding(
+            get: { showSnippetLibrary || showQuickAdd },
+            set: { if !$0 { showSnippetLibrary = false; showQuickAdd = false } }
+        )) {
+            if showQuickAdd {
+                QuickAddSidebarView(onAdd: { macro in
+                    if let selected = selectedProfile,
+                       let index = profileManager.profiles.firstIndex(where: { $0.id == selected.id }) {
+                        withAnimation {
+                            profileManager.profiles[index].macros.append(macro)
                         }
                     }
-                }
+                }, onClose: {
+                    showQuickAdd = false
+                })
+                .frame(minWidth: 260)
+            } else {
+                SnippetLibraryView()
+                    .frame(minWidth: 250)
+                    .toolbar {
+                        ToolbarItem(placement: .primaryAction) {
+                            Button(action: { showSnippetLibrary = false }) {
+                                Label("Close", systemImage: "sidebar.right")
+                            }
+                        }
+                    }
+            }
         }
         .alert("Delete Profile?", isPresented: $showProfileDeleteConfirmation) {
             Button("Cancel", role: .cancel) {
@@ -245,10 +263,25 @@ struct MacroManagerView: View {
                 }
             
             ToolbarItem(placement: .automatic) {
-                Button(action: { showSnippetLibrary.toggle() }) {
-                    Label("Snippets", systemImage: "curlybraces")
+                HStack(spacing: 0) {
+                    Button(action: {
+                        showQuickAdd = false
+                        showSnippetLibrary.toggle()
+                    }) {
+                        Label("Snippets", systemImage: "curlybraces")
+                            .foregroundColor(showSnippetLibrary ? .blue : .primary)
+                    }
+                    .help("Show Snippet Library")
+                    
+                    Button(action: {
+                        showSnippetLibrary = false
+                        showQuickAdd.toggle()
+                    }) {
+                        Label("Quick Add", systemImage: "wand.and.stars")
+                             .foregroundColor(showQuickAdd ? .blue : .primary)
+                    }
+                    .help("Show Quick Add")
                 }
-                .help("Show Snippet Library")
             }
             
             ToolbarItem(placement: .automatic) {
@@ -414,37 +447,30 @@ struct MacroManagerView: View {
                 
                 Spacer()
                 
-                Button(action: {
-                    let newMacro = Macro(
-                        label: "New Macro",
-                        type: .shellScript,
-                        value: "echo 'Hello World'",
-                        iconName: "star"
-                    )
-                    withAnimation {
-                        profileManager.profiles[index].macros.append(newMacro)
-                    }
-                }) {
-                    HStack {
-                        Image(systemName: "plus")
-                        Text("Add Macro")
-                    }
-                    .font(.body)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(
-                        LinearGradient(
-                            colors: [.blue, .purple],
-                            startPoint: .leading,
-                            endPoint: .trailing
+                HStack(spacing: 12) {
+                    Button(action: {
+                        let newMacro = Macro(
+                            label: "New Macro",
+                            type: .shellScript,
+                            value: "echo 'Hello World'",
+                            iconName: "star"
                         )
-                    )
-                    .cornerRadius(10)
-                    .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+                        withAnimation {
+                            profileManager.profiles[index].macros.append(newMacro)
+                        }
+                    }) {
+                        GradientMenuLabel(text: "Custom Macro", systemImage: "plus.square")
+                    }
+                    .buttonStyle(.plain)
+                    
+                    Button(action: {
+                        showSnippetLibrary = false
+                        showQuickAdd = true
+                    }) {
+                        GradientMenuLabel(text: "Quick Add", systemImage: "wand.and.stars")
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
             .padding(.horizontal)
             
@@ -504,36 +530,69 @@ struct MacroManagerView: View {
                     DispatchQueue.main.async {
                         guard let jsonString = string as? String else { return }
                         
-                        // Try to parse as Snippet JSON
+                        // Try to parse as JSON
                         if let data = jsonString.data(using: .utf8),
-                           let dict = try? JSONSerialization.jsonObject(with: data) as? [String: String],
-                           dict["type"] == "snippet",
-                           let name = dict["name"],
-                           let content = dict["content"] {
+                           let dict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                           let type = dict["type"] as? String {
                             
-                            if self.draggingMacro == nil {
-                                let newMacro = Macro(
-                                    label: name,
-                                    type: .text, // Requested: text/paste
-                                    value: content,
-                                    iconName: "doc.text.fill"
-                                )
-                                withAnimation {
-                                    profileManager.profiles[index].macros.append(newMacro)
+                            // Case 1: Quick Add Macro
+                            if type == "macro_json",
+                               let label = dict["label"] as? String,
+                               let macroTypeRaw = dict["macroType"] as? String,
+                               let macroType = MacroType(rawValue: macroTypeRaw),
+                               let value = dict["value"] as? String,
+                               let iconName = dict["iconName"] as? String {
+                                
+                                if self.draggingMacro == nil {
+                                    let newMacro = Macro(
+                                        label: label,
+                                        type: macroType,
+                                        value: value,
+                                        iconName: iconName
+                                    )
+                                    withAnimation {
+                                        profileManager.profiles[index].macros.append(newMacro)
+                                    }
                                 }
+                                return
                             }
-                        } else {
-                            // Fallback for raw text
-                            if self.draggingMacro == nil {
-                                let newMacro = Macro(
-                                    label: "New Text Macro",
-                                    type: .text,
-                                    value: jsonString,
-                                    iconName: "doc.text"
-                                )
-                                withAnimation {
-                                    profileManager.profiles[index].macros.append(newMacro)
+                            
+                            // Case 2: Snippet (type == "snippet")
+                            if type == "snippet",
+                               let name = dict["name"] as? String,
+                               let content = dict["content"] as? String {
+                                
+                                if self.draggingMacro == nil {
+                                    let newMacro = Macro(
+                                        label: name,
+                                        type: .text,
+                                        value: content,
+                                        iconName: "doc.text.fill"
+                                    )
+                                    withAnimation {
+                                        profileManager.profiles[index].macros.append(newMacro)
+                                    }
                                 }
+                                return
+                            }
+                        }
+                        
+                        // Fallback handling (outside the JSON block essentially)
+                        // If we reached here, it wasn't a recognized JSON drop
+                        if self.draggingMacro == nil {
+                             // Only treat as text if it DOESN'T look like our internal JSON
+                            // Simple heuristic: if it starts with { and ends with }, assume it's failed JSON and ignore?
+                            // Or just treat as text.
+                            // The previous code would treat valid JSON snippets as text if parsing failed, but we want to be robust.
+                            
+                            let newMacro = Macro(
+                                label: "New Text Macro",
+                                type: .text,
+                                value: jsonString,
+                                iconName: "doc.text"
+                            )
+                            withAnimation {
+                                profileManager.profiles[index].macros.append(newMacro)
                             }
                         }
                     }
@@ -650,5 +709,32 @@ struct MacroDragRelocateDelegate: DropDelegate {
     func performDrop(info: DropInfo) -> Bool {
         self.current = nil
         return true
+    }
+}
+
+struct GradientMenuLabel: View {
+    let text: String
+    let systemImage: String
+    
+    var body: some View {
+        HStack {
+            Image(systemName: systemImage)
+            Text(text)
+        }
+        .font(.headline)
+        .fontWeight(.bold)
+        .foregroundColor(.white)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(
+            LinearGradient(
+                colors: [.blue, .purple],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        )
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
+        .contentShape(Rectangle())
     }
 }

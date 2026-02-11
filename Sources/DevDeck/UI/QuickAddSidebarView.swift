@@ -52,7 +52,7 @@ struct QuickAddSidebarView: View {
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.1)))
                 
                 // Category Filter (Horizontal Scroll)
-                ScrollView(.horizontal, showsIndicators: false) {
+                ScrollView(.horizontal, showsIndicators: true) {
                     HStack(spacing: 8) {
                         FilterChip(label: "All", isSelected: selectedCategory == nil) {
                             selectedCategory = nil
@@ -65,6 +65,7 @@ struct QuickAddSidebarView: View {
                         }
                     }
                     .padding(.vertical, 4)
+                    .padding(.bottom, 12) // Space for scrollbar
                 }
             }
             .padding()

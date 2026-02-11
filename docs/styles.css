@@ -334,18 +334,25 @@ footer a {
 /* How it Works */
 .how-it-works {
     text-align: center;
-    padding: 60px 0;
+    padding: 100px 0;
+    /* More padding */
 }
 
 .how-it-works h2 {
-    font-size: 2.5rem;
-    margin-bottom: 40px;
+    font-size: 3rem;
+    /* Larger */
+    margin-bottom: 60px;
+    background: linear-gradient(180deg, #fff 0%, #a1a1aa 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .steps-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 30px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+    /* Larger gap */
     margin-top: 40px;
 }
 
@@ -402,22 +409,70 @@ footer a {
 }
 
 .step-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 40px;
     text-align: left;
     position: relative;
-    padding-left: 20px;
+    overflow: hidden;
+    backdrop-filter: blur(20px);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        background 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.step-card:hover {
+    transform: translateY(-8px);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .step-number {
-    font-size: 4rem;
+    font-size: 5rem;
     font-weight: 800;
-    color: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.03);
     position: absolute;
-    top: -30px;
-    left: 0;
-    z-index: -1;
+    top: -10px;
+    right: 20px;
+    z-index: 0;
+    pointer-events: none;
+    font-family: 'Inter', sans-serif;
+    /* Ensure correct font */
+}
+
+.step-icon {
+    font-size: 5rem;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+    background: linear-gradient(135deg, #007AFF, #AF52DE);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.step-card:hover .step-icon {
+    transform: scale(1.1) rotate(5deg);
 }
 
 .step-card h3 {
-    margin-bottom: 10px;
+    margin: 0 0 12px 0;
+    font-size: 1.5rem;
     color: var(--accent-blue);
+    position: relative;
+    z-index: 1;
+}
+
+.step-card p {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin: 0;
+    position: relative;
+    z-index: 1;
 }

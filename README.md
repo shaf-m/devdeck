@@ -6,32 +6,23 @@
 
 ## 🚀 Key Features
 
-### 🎡 Dynamic Radial Menu
-The heart of DevDeck. Triggered by a global hotkey, it gives you a glassmorphic dashboard of actions centered around your cursor.
-- **Instant Access**: Hold the `~` (Tilde) key to summon the menu.
-- **Quick Execute**: Use keys `1-6` or click a node to trigger a macro.
-- **Smart Hub**: The center hub displays the current profile and allows manual cycling with a click.
+### ⌘ Powerful Macros
+Execute shell scripts, open URLs, paste text snippets, or simulate complex keystrokes with a single tap. Automate your repetitive tasks instantly.
 
-### 🧠 Context-Aware Profiles
-Never search for the right shortcut again. DevDeck automatically detects your active application and switches to the relevant profile.
-- **Auto-Switch**: Focused on VS Code? Your "Coding" macros appear. Switched to Safari? Your "Browsing" macros are ready.
-- **Custom Links**: Easily link any macOS application bundle ID to a specific profile.
+### 📋 Clipboard History
+Never lose a copied snippet again. Access your clipboard history directly from the radial menu and paste past items with ease.
 
-### 🛠️ Powerful Macros
-Automate anything with various macro types:
-- **Shell Scripts**: Run terminal commands in the background.
-- **AppleScript**: Control system-level apps and settings.
-- **Keystrokes**: Simulate complex keyboard shortcuts (e.g., `Cmd+Option+I`).
-- **Text Injection**: Paste pre-defined templates or boilerplates instantly.
+### ✨ Context Aware
+DevDeck adapts to the app you're using. Create specific profiles for Xcode, VS Code, Final Cut Pro, or any other app, and DevDeck switches automatically.
 
-### 📚 Universal Snippet Library
-A persistent home for your most used code blocks, accessible across all your editors.
-- **Library Sidebar**: Organize snippets with languages, notes, and pinning.
-- **Drag & Drop**: Drag snippets directly into your macros to create text-paste actions.
-- **Search & Pin**: Keep your most important snippets at the top.
+### 📝 Snippet Manager
+Save and organize your frequently used code blocks. Insert them instantly into any editor without breaking your flow.
 
-### 📤 Import & Export
-Share your workflows with others or keep backups of your custom profiles using standard JSON files.
+### 🤝 Shareable Profiles
+Export your custom macro profiles and share them with your team or the community, enhancing collaboration and standardization.
+
+### 🔓 Open Source
+Transparent and community-driven. Inspect the code, contribute features, and build with us.
 
 ## 🛠️ Setup & Installation
 
@@ -62,13 +53,18 @@ swift run
 
 > **Note:** The compiled app will be located at `./DevDeck.app` (or `./DevDeck.dmg` if packaged).
 
-## ⌨️ Global Controls
+## ⚡️ How it Works
+ 
+1.  **Install & Launch**: Download the app, move to Applications, and grant accessibility permissions.
+2.  **Configure**: Create profiles for your apps and assign a trigger key (default: `~`).
+3.  **Flow**: Hold the trigger key anywhere to summon the radial menu. Move your mouse to a node to execute.
 
-- **Hold `~` (Tilde)**: Show Radial Menu.
-- **Release `~`**: Hide Radial Menu.
-- **Press `1-6`**: Execute the macro at the corresponding position while the menu is open.
-- **Click Center Hub**: Cycle to the next available profile manually.
-- **`Esc`**: Close the menu without executing.
+## ⌨️ Controls
+
+- **Hold Trigger Key (`~`)**: Open Radial Menu.
+- **Release Trigger Key**: Close Menu.
+- **Hover & Click**: Execute macro at cursor position.
+- **Click Center Hub**: Cycle active profile manually.
 
 ## 🤝 Who is DevDeck for?
 

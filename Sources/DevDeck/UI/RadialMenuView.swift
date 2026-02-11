@@ -130,24 +130,12 @@ struct RadialMenuView: View {
                 VStack {
                     Spacer()
                      if menuMode == .main && showHistory {
-                        Button(action: {
+                        HistoryPillButton {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                                 menuMode = .history
                             }
-                        }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "doc.on.clipboard")
-                                Text("History")
-                            }
-                            .font(.system(size: 12, design: .monospaced)) // SF Mono 12-14pt
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(Capsule().fill(.ultraThinMaterial))
-                            .overlay(Capsule().stroke(Color.primary.opacity(0.2), lineWidth: 0.5))
-                            .shadow(radius: 2)
                         }
-                        .buttonStyle(PlainButtonStyle())
-                        .padding(.bottom, 130) // Position it above the Close node (radius 170). Close Node center is ~170 from center, or ~80 from bottom in 500px view. 
+                        .padding(.bottom, 135) // Position it above the Close node (radius 170). Close Node center is ~170 from center, or ~80 from bottom in 500px view. 
                         // If view is centered, center is at 50% height. Close node is at center + 170.
                         // We want this button at roughly center + 120.
                         // Using Spacer + padding bottom means padding from bottom edge effectively if centered?
@@ -433,6 +421,52 @@ struct ClipboardPillButton: View {
         }
         .buttonStyle(PlainButtonStyle())
         .offset(x: x, y: y)
+        .onHover { hovering in
+            isHovering = hovering
+        }
+    }
+}
+
+struct HistoryPillButton: View {
+    let action: () -> Void
+    
+    @State private var isHovering = false
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Image(systemName: "doc.on.clipboard")
+                Text("History")
+            }
+            .font(.system(size: 12, design: .monospaced))
+            .foregroundColor(isHovering ? .white : .primary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(
+                ZStack {
+                    if isHovering {
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [.blue, .purple]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                    } else {
+                        Capsule().fill(.ultraThinMaterial)
+                    }
+                }
+            )
+            .overlay(
+                Capsule()
+                    .stroke(isHovering ? Color.white.opacity(0.5) : Color.primary.opacity(0.2), lineWidth: 0.5)
+            )
+            .shadow(color: isHovering ? Color.purple.opacity(0.4) : Color.black.opacity(0.1), radius: isHovering ? 4 : 2)
+            .scaleEffect(isHovering ? 1.05 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isHovering)
+        }
+        .buttonStyle(PlainButtonStyle())
         .onHover { hovering in
             isHovering = hovering
         }

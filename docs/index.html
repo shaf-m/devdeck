@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevDeck - The OS for your Deck</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" type='text/css' href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
+    <meta name="description"
+        content="DevDeck is a powerful radial menu overlay for macOS, streamlining your workflow with macros, clipboard history, and more.">
+</head>
+
+<body>
+
+    <div class="background-glow"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo">&lt;DevDeck&gt;</div>
+            <nav class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#download">Download</a>
+                <a href="https://github.com/shaf-m/devdeck" target="_blank">GitHub</a>
+            </nav>
+        </header>
+
+        <section class="hero">
+            <h1>The Operating System<br>for your Deck</h1>
+            <p>Supercharge your workflow with a beautiful, keyboard-first radial menu for macOS.</p>
+            <a href="https://github.com/shaf-m/devdeck/releases" class="cta-button">Download for macOS</a>
+
+            <div class="visual-demo">
+                <!-- Abstract representation of the radial menu -->
+                <div class="visual-node" style="top: 20px; left: 50%; transform: translateX(-50%);"></div>
+                <div class="visual-node" style="bottom: 50px; left: 20px;"></div>
+                <div class="visual-node" style="bottom: 50px; right: 20px;"></div>
+                <div class="visual-node" style="top: 100px; right: -10px; width: 30px; height: 30px;"></div>
+                <div class="visual-node" style="top: 100px; left: -10px; width: 30px; height: 30px;"></div>
+
+                <div class="visual-hub">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <section class="integrations reveal">
+            <p>Works natively with</p>
+            <div class="carousel-container">
+                <div class="carousel-track">
+                    <!-- Duplicate for infinite scroll effect -->
+                    <i class="devicon-intellij-plain"></i>
+                    <i class="devicon-pycharm-plain"></i>
+                    <i class="devicon-vscode-plain"></i>
+                    <i class="devicon-xcode-plain"></i>
+                    <i class="devicon-eclipse-plain"></i>
+                    <i class="devicon-github-original"></i>
+                    <i class="devicon-chrome-plain"></i>
+                    <i class="devicon-safari-plain"></i>
+                    <i class="devicon-firefox-plain"></i>
+
+                    <!-- Duplicated set -->
+                    <i class="devicon-intellij-plain"></i>
+                    <i class="devicon-pycharm-plain"></i>
+                    <i class="devicon-vscode-plain"></i>
+                    <i class="devicon-xcode-plain"></i>
+                    <i class="devicon-eclipse-plain"></i>
+                    <i class="devicon-github-original"></i>
+                    <i class="devicon-chrome-plain"></i>
+                    <i class="devicon-safari-plain"></i>
+                    <i class="devicon-firefox-plain"></i>
+                </div>
+            </div>
+        </section>
+
+        <section class="integrations reveal">
+            <p>Supported Languages</p>
+            <div class="carousel-container">
+                <div class="carousel-track" style="animation-direction: reverse;">
+                    <!-- Duplicate for infinite scroll effect -->
+                    <i class="devicon-powershell-plain"></i>
+                    <i class="devicon-python-plain"></i>
+                    <i class="devicon-javascript-plain"></i>
+                    <i class="devicon-json-plain"></i>
+                    <i class="devicon-java-plain"></i>
+                    <i class="devicon-typescript-plain"></i>
+                    <i class="devicon-azuresqldatabase-plain"></i>
+                    <i class="devicon-html5-plain"></i>
+                    <i class="devicon-yaml-plain"></i>
+                    <i class="devicon-c-original"></i>
+
+                    <!-- Duplicated set -->
+                    <i class="devicon-powershell-plain"></i>
+                    <i class="devicon-python-plain"></i>
+                    <i class="devicon-javascript-plain"></i>
+                    <i class="devicon-json-plain"></i>
+                    <i class="devicon-java-plain"></i>
+                    <i class="devicon-typescript-plain"></i>
+                    <i class="devicon-azuresqldatabase-plain"></i>
+                    <i class="devicon-html5-plain"></i>
+                    <i class="devicon-yaml-plain"></i>
+                    <i class="devicon-c-original"></i>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="feature-card reveal">
+                <div class="feature-icon">⌘</div>
+                <h3>Powerful Macros</h3>
+                <p>Execute shell scripts, open URLs, paste text snippets, or simulate complex keystrokes with a single
+                    tap.</p>
+            </div>
+            <div class="feature-card reveal" style="transition-delay: 100ms;">
+                <div class="feature-icon">📋</div>
+                <h3>Clipboard History</h3>
+                <p>Never lose a copied snippet again. Access your clipboard history directly from the radial menu.</p>
+            </div>
+            <div class="feature-card reveal" style="transition-delay: 200ms;">
+                <div class="feature-icon">🎨</div>
+                <h3>Context Aware</h3>
+                <p>DevDeck adapts to the app you're using. Create specific profiles for Xcode, VS Code, or Final Cut
+                    Pro.</p>
+            </div>
+            <div class="feature-card reveal" style="transition-delay: 300ms;">
+                <div class="feature-icon">✨</div>
+                <h3>Native Design</h3>
+                <p>Built with SwiftUI, DevDeck feels right at home on macOS with smooth animations and glassmorphism.
+                </p>
+            </div>
+        </section>
+
+        <section id="how-it-works" class="how-it-works">
+            <h2 class="reveal">How it Works</h2>
+            <div class="steps-grid">
+                <div class="step-card reveal">
+                    <div class="step-number">1</div>
+                    <h3>Install & Launch</h3>
+                    <p>Download the app, move it to your Applications folder, and launch it. Grant necessary
+                        accessibility permissions.</p>
+                </div>
+                <div class="step-card reveal" style="transition-delay: 100ms;">
+                    <div class="step-number">2</div>
+                    <h3>configure Profiles</h3>
+                    <p>Create profiles for your favorite apps. Assign a trigger key (e.g., Hyper+D) to open the menu.
+                    </p>
+                </div>
+                <div class="step-card reveal" style="transition-delay: 200ms;">
+                    <div class="step-number">3</div>
+                    <h3>Flow</h3>
+                    <p>Trigger the menu anywhere. Move your mouse to a node to execute a macro, or access your clipboard
+                        history.</p>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>&copy; 2024 DevDeck. Open source on <a href="https://github.com/shaf-m/devdeck">GitHub</a>.</p>
+        </footer>
+    </div>
+
+    <script>
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementVisible = 150;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+        window.addEventListener("scroll", reveal);
+        // Trigger once on load
+        reveal();
+    </script>
+
+</body>
+
+</html>

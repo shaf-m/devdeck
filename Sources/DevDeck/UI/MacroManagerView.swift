@@ -94,37 +94,58 @@ struct MacroManagerView: View {
             }
         } detail: {
             // MAIN CANVAS
-            if let selected = selectedProfile,
-               let index = profileManager.profiles.firstIndex(where: { $0.id == selected.id }) {
-                profileDetailView(index: index)
-            } else {
-                VStack(spacing: 20) {
-                    Text("Welcome to")
-                        .font(.title2)
-                        .foregroundColor(.secondary)
-                    
-                    Text("<DevDeck>")
-                        .font(.system(size: 48, weight: .bold, design: .monospaced))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.blue, .purple],
-                                startPoint: .leading,
-                                endPoint: .trailing
+            VStack(spacing: 0) {
+                if let selected = selectedProfile,
+                   let index = profileManager.profiles.firstIndex(where: { $0.id == selected.id }) {
+                    profileDetailView(index: index)
+                } else {
+                    VStack(spacing: 20) {
+                        Text("Welcome to")
+                            .font(.title2)
+                            .foregroundColor(.secondary)
+                        
+                        Text("<DevDeck>")
+                            .font(.system(size: 48, weight: .bold, design: .monospaced))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [.blue, .purple],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
                             )
-                        )
-                    
-                    Text("Select or create a profile to begin")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-                        .padding(.top, 10)
-                    
-                    Button("Help & Tutorials") {
-                        showHelp = true
+                        
+                        Text("Select or create a profile to begin")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                            .padding(.top, 10)
+                        
+                        Button("Help & Tutorials") {
+                            showHelp = true
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                
+                // Footer
+                Divider()
+                HStack {
+                    if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+                       let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
+                        Text("DevDeck v\(version) (\(build))")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text("DevDeck")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .background(.ultraThinMaterial)
             }
         }
         .sheet(isPresented: $showHelp) {
@@ -212,7 +233,7 @@ struct MacroManagerView: View {
                             .frame(width: 480, height: 480)
                         
                         // Screen
-                        RadialMenuView(profileManager: profileManager, clipboardManager: clipboardManager, previewProfile: profile, onExecute: { _ in }, circlePadding: 5)
+                        RadialMenuView(profileManager: profileManager, clipboardManager: clipboardManager, previewProfile: profile, onExecute: { _ in }, circlePadding: 5, showHistory: false)
                             .frame(width: 450, height: 450)
                             .scaleEffect(0.85)
                             .background(Color.clear)

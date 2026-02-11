@@ -45,9 +45,9 @@ class ClipboardHistoryManager: ObservableObject {
                 let newItem = ClipboardItem(text: newString, timestamp: Date())
                 
                 DispatchQueue.main.async {
-                    // Add to top, keep only last 6
+                    // Add to top, keep only last 7
                     self.history.insert(newItem, at: 0)
-                    if self.history.count > 6 {
+                    if self.history.count > 7 {
                         self.history.removeLast()
                     }
                 }

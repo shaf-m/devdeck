@@ -8,6 +8,7 @@ struct RadialMenuView: View {
     var onPaste: ((ClipboardItem) -> Void)? = nil // NEW: Handle paste
     var onClose: (() -> Void)? = nil // Optional close handler
     var circlePadding: CGFloat = 20
+    var showHistory: Bool = true // Default to true
     
     @State private var errorMessage: String?
     @State private var showError: Bool = false
@@ -128,7 +129,7 @@ struct RadialMenuView: View {
                 // 3. Switcher / Back Button in Center Hub area
                 VStack {
                     Spacer()
-                     if menuMode == .main {
+                     if menuMode == .main && showHistory {
                         Button(action: {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                                 menuMode = .history
@@ -209,50 +210,53 @@ struct RadialMenuView: View {
                 }
                 
                 // 5. History View (Circular Layout)
+                // 5. History View (Circular Layout)
                 if menuMode == .history {
                     let historyItems = clipboardManager.history
-                    let totalItems = historyItems.count + 1
-                    let backIndex = historyItems.count
+                    // We want to arrange items in an arc at the top (-90)
+                    // and the Back button at the bottom (90)
                     
-                    let step = 360.0 / Double(totalItems)
-                    let rotationOffset = 180.0 - (Double(backIndex) * step) // Back button at bottom
+                    let fixedStep: Double = 45.0
+                    // Center the items around -90.
+                    // If count is 1: -90
+                    // If count is 2: -112.5, -67.5 (-90 +/- 22.5)
+                    // Formula: Start = -90 - (totalSpan / 2) + (step / 2)
+                    // totalSpan = count * step
+                    // Start = -90 - (count * step / 2) + (step / 2)
+                    //       = -90 - step/2 * (count - 1)
+                    let startAngle = -90.0 - (Double(historyItems.count - 1) * fixedStep / 2.0)
                     
-                    ForEach(0..<totalItems, id: \.self) { index in
-                        if index < historyItems.count {
-                            let item = historyItems[index]
-                            
-                             // We pass these purely for the Button view, but we can just use the view
-                            ClipboardPillButton(
-                                item: item,
-                                index: index,
-                                total: totalItems,
-                                radius: 170,
-                                rotationOffset: rotationOffset,
-                                action: {
-                                    // Paste action
-                                    onPaste?(item)
-                                    // UI Close is handled by onPaste usually or we can close here too
-                                    onClose?()
-                                }
-                            )
-                        } else {
-                           // Back Button (replaces Close)
-                           RadialNodeButton(
-                                iconName: "chevron.left",
-                                label: "Back",
-                                index: index,
-                                total: totalItems,
-                                radius: 170,
-                                rotationOffset: rotationOffset,
-                                isCloseButton: true, // Reuse style
-                                action: {
-                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                                        menuMode = .main
-                                    }
-                                }
-                            )
-                        }
+                    ForEach(0..<historyItems.count, id: \.self) { index in
+                        let item = historyItems[index]
+                        let angle = startAngle + (Double(index) * fixedStep)
+                        
+                        ClipboardPillButton(
+                            item: item,
+                            radius: 170,
+                            angle: angle,
+                            action: {
+                                onPaste?(item)
+                                onClose?()
+                            }
+                        )
                     }
+                    
+                    // Back Button (Always at 90 degrees / Bottom)
+                    RadialNodeButton(
+                        iconName: "chevron.left",
+                        label: "Back",
+                        index: 0,
+                        total: 0,
+                        radius: 170,
+                        rotationOffset: 0,
+                        isCloseButton: true,
+                        customAngle: 90.0,
+                        action: {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                menuMode = .main
+                            }
+                        }
+                    )
                     .transition(.asymmetric(insertion: .scale.combined(with: .opacity), removal: .opacity))
                 }
             }
@@ -284,17 +288,21 @@ struct RadialNodeButton: View {
     let radius: CGFloat
     let rotationOffset: Double
     let isCloseButton: Bool
+    var customAngle: Double? = nil
     let action: () -> Void
     
     @State private var isHovering = false
     
     var body: some View {
-        // Calculate angle: Start from -90 deg (Top)
-        // Apply rotationOffset to shift the whole ring
-        let indexDouble = Double(index)
-        let totalDouble = Double(total)
-        let step = (360.0 / totalDouble)
-        let angleDegrees = indexDouble * step - 90.0 + rotationOffset
+        let angleDegrees: Double
+        if let custom = customAngle {
+            angleDegrees = custom
+        } else {
+            let indexDouble = Double(index)
+            let totalDouble = Double(total)
+            let step = (360.0 / totalDouble)
+            angleDegrees = indexDouble * step - 90.0 + rotationOffset
+        }
         let angleRadians = angleDegrees * .pi / 180.0
         
         let x = CGFloat(cos(angleRadians)) * radius
@@ -370,20 +378,14 @@ struct RadialNodeButton: View {
 
 struct ClipboardPillButton: View {
     let item: ClipboardItem
-    let index: Int
-    let total: Int
     let radius: CGFloat
-    let rotationOffset: Double
+    let angle: Double
     let action: () -> Void
     
     @State private var isHovering = false
     
     var body: some View {
-        let indexDouble = Double(index)
-        let totalDouble = Double(total)
-        let step = (360.0 / totalDouble)
-        let angleDegrees = indexDouble * step - 90.0 + rotationOffset
-        let angleRadians = angleDegrees * .pi / 180.0
+        let angleRadians = angle * .pi / 180.0
         
         let x = CGFloat(cos(angleRadians)) * radius
         let y = CGFloat(sin(angleRadians)) * radius

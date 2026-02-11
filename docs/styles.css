@@ -138,6 +138,20 @@ header {
     color: white;
 }
 
+.gradient-text {
+    background: linear-gradient(135deg, #007AFF, #AF52DE);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+.gradient-text:hover {
+    opacity: 0.8;
+}
+
 /* Hero Section */
 .hero {
     text-align: center;
@@ -383,7 +397,7 @@ footer a {
 .carousel-track {
     display: flex;
     width: max-content;
-    animation: scroll 40s linear infinite;
+    animation: scroll 25s linear infinite;
 }
 
 .carousel-track i {
@@ -475,4 +489,132 @@ footer a {
     margin: 0;
     position: relative;
     z-index: 1;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+
+    /* Global Layout */
+    .container {
+        padding: 0 16px;
+    }
+
+    /* Header */
+    header {
+        padding: 12px 20px;
+        flex-direction: column;
+        gap: 16px;
+        top: 10px;
+        margin-top: 10px;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .nav-links a {
+        margin-left: 0;
+        font-size: 0.85rem;
+    }
+
+    /* Hero Section */
+    .hero {
+        padding: 60px 0 40px;
+    }
+
+    .hero h1 {
+        font-size: 3rem;
+        letter-spacing: -1.5px;
+    }
+
+    .hero p {
+        font-size: 1.1rem;
+        margin-bottom: 32px;
+    }
+
+    .cta-button {
+        padding: 14px 32px;
+        font-size: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+    /* Visual Demo (Radial Menu) */
+    .visual-demo {
+        width: 260px;
+        height: 260px;
+        margin: 40px auto;
+    }
+
+    .visual-hub {
+        width: 80px;
+        height: 80px;
+    }
+
+    .visual-node {
+        width: 32px;
+        height: 32px;
+    }
+
+    /* Features Grid */
+    .features {
+        grid-template-columns: 1fr;
+        padding: 40px 0;
+        gap: 20px;
+    }
+
+    .feature-card {
+        padding: 30px;
+    }
+
+    /* How it Works */
+    .how-it-works {
+        padding: 60px 0;
+    }
+
+    .how-it-works h2 {
+        font-size: 2.2rem;
+        margin-bottom: 40px;
+    }
+
+    .steps-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        margin-top: 20px;
+    }
+
+    .step-card {
+        padding: 30px;
+    }
+
+    .step-number {
+        font-size: 4rem;
+        right: 16px;
+    }
+
+    .step-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+    }
+
+    /* Footer */
+    footer {
+        padding: 40px 0;
+        margin-top: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .logo {
+        font-size: 1.3rem;
+        /* Slightly smaller logo */
+    }
 }

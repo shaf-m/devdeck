@@ -34,20 +34,15 @@ Transparent and community-driven. Inspect the code, contribute features, and bui
 
 **Prerequisites:**
 - Xcode 14.0 or later (for macOS SDK).
-- Swift 5.7 or later.
 
-```bash
 # Clone the repository
 git clone https://github.com/shafm/devdeck.git
 cd devdeck
 
-# Build and run directly
-swift run
-
-# Build for release
+# Build the app
 ./scripts/build_app.sh
 
-# Package as DMG
+# Package as DMG (Optional)
 ./scripts/package_app.sh
 ```
 

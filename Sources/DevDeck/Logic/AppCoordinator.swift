@@ -4,6 +4,7 @@ import Combine
 
 class AppCoordinator: ObservableObject {
     @Published var profileManager = ProfileManager()
+    @Published var clipboardManager = ClipboardHistoryManager()
     
     private var inputMonitor = GlobalInputMonitor()
     private var contextManager = ContextManager()
@@ -25,9 +26,7 @@ class AppCoordinator: ObservableObject {
         // Actually safe to do here.
         self.menuBarManager = MenuBarManager(coordinator: self)
     }
-    
-    // ... (rest of class)
-    
+       
     private func setupShortcutMonitor() {
         // Monitor local key presses when app is active (overlay is up)
         shortcutMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
@@ -83,8 +82,12 @@ class AppCoordinator: ObservableObject {
         
         let contentView = RadialMenuView(
             profileManager: profileManager,
+            clipboardManager: clipboardManager,
             onExecute: { [weak self] macro in
                 self?.executeMacro(macro)
+            },
+            onPaste: { [weak self] item in
+                self?.handlePaste(item)
             },
             onClose: { [weak self] in
                 self?.hideOverlay()
@@ -113,7 +116,7 @@ class AppCoordinator: ObservableObject {
         // Force activate the last known app
         if let lastApp = contextManager.lastActiveApp {
             print("Activating last app: \(lastApp.localizedName ?? "Unknown")")
-            lastApp.activate(options: .activateIgnoringOtherApps)
+            lastApp.activate()
         } else {
             print("No last active app found, relying on system focus")
             NSApp.hide(nil) // Extra measure to yield focus
@@ -123,6 +126,39 @@ class AppCoordinator: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             MacroExecutor.shared.execute(macro)
         }
+    }
+    
+    func handlePaste(_ item: ClipboardItem) {
+        // 1. Put on clipboard (ensure it's the active item)
+        clipboardManager.copy(item)
+        
+        // 2. Hide window
+        hideOverlay()
+        
+        // 3. Activate last app and paste
+        if let lastApp = contextManager.lastActiveApp {
+             lastApp.activate()
+        } else {
+             NSApp.hide(nil)
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            self.simulatePaste()
+        }
+    }
+    
+    private func simulatePaste() {
+        let source = CGEventSource(stateID: .hidSystemState)
+        let kVK_ANSI_V: CGKeyCode = 0x09
+        let cmdKey: CGEventFlags = .maskCommand
+        
+        let keyDown = CGEvent(keyboardEventSource: source, virtualKey: kVK_ANSI_V, keyDown: true)
+        keyDown?.flags = cmdKey
+        let keyUp = CGEvent(keyboardEventSource: source, virtualKey: kVK_ANSI_V, keyDown: false)
+        keyUp?.flags = cmdKey
+        
+        keyDown?.post(tap: .cghidEventTap)
+        keyUp?.post(tap: .cghidEventTap)
     }
     
     private func showOverlay() {

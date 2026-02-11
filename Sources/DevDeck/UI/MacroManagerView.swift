@@ -131,17 +131,18 @@ struct MacroManagerView: View {
                 // Footer
                 Divider()
                 HStack {
-                    if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+                if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
                        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
                         Text("DevDeck v\(version) (\(build))")
                             .font(.caption)
                             .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
                     } else {
                         Text("DevDeck")
                             .font(.caption)
                             .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
                     }
-                    Spacer()
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)

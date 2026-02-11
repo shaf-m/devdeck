@@ -10,6 +10,13 @@ CONTENTS_DIR="${APP_BUNDLE}/Contents"
 MACOS_DIR="${CONTENTS_DIR}/MacOS"
 RESOURCES_DIR="${CONTENTS_DIR}/Resources"
 
+echo "Incrementing Build Number..."
+PLIST="Sources/DevDeck/Resources/Info.plist"
+CURRENT_BUILD=$(/usr/libexec/PlistBuddy -c "Print CFBundleVersion" "$PLIST")
+NEW_BUILD=$((CURRENT_BUILD + 1))
+/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $NEW_BUILD" "$PLIST"
+echo "Build number updated to $NEW_BUILD"
+
 echo "Building ${APP_NAME}..."
 swift build -c release
 

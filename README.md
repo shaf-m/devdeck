@@ -1,7 +1,7 @@
 
 <div align="center">
 
-# DevDeck
+# < DevDeck >
 ### The missing layer of macOS
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)

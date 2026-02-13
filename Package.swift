@@ -18,7 +18,8 @@ let package = Package(
         .executableTarget(
             name: "DevDeck",
             resources: [
-                .process("Resources/default_profiles.json")
+                .process("Resources/default_profiles.json"),
+                .process("Resources/AppIcon.icns")
             ]
         ),
     ]

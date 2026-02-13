@@ -32,6 +32,7 @@ echo "Copying Info.plist..."
 cp "Sources/DevDeck/Resources/Info.plist" "${CONTENTS_DIR}/"
 
 echo "Copying Resources..."
+cp "Sources/DevDeck/Resources/AppIcon.icns" "${RESOURCES_DIR}/"
 # Process resources manually if needed, or if SPM handles it?
 # Provide copy of default_profiles.json if not embedded
 # SPM puts resources in a bundle inside the executable usually, or alongside.

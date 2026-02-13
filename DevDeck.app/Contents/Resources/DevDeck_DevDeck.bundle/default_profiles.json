@@ -9,19 +9,19 @@
         "iconName": "safari"
       },
       {
-        "label": "Space Left",
+        "label": "Window Left",
         "type": "keystroke",
         "value": "ctrl+left",
         "iconName": "arrow.left.circle"
       },
       {
-        "label": "Space Right",
+        "label": "Window Right",
         "type": "keystroke",
         "value": "ctrl+right",
         "iconName": "arrow.right.circle"
       },
       {
-        "label": "Finder",
+        "label": "Spotlight",
         "type": "keystroke",
         "value": "command+space",
         "iconName": "magnifyingglass"

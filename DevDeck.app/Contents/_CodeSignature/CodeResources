@@ -4,18 +4,40 @@
 <dict>
 	<key>files</key>
 	<dict>
+		<key>Resources/AppIcon.icns</key>
+		<data>
+		b+WNUAfXseQgF4w8D73sqjiNXak=
+		</data>
+		<key>Resources/DevDeck_DevDeck.bundle/AppIcon.icns</key>
+		<data>
+		b+WNUAfXseQgF4w8D73sqjiNXak=
+		</data>
 		<key>Resources/DevDeck_DevDeck.bundle/default_profiles.json</key>
 		<data>
-		Ljc0dG0x1WTuAUNeZWKMQlrtPOY=
+		+oZxUmJj6CbGqAv26YkQbQGX7IM=
 		</data>
 	</dict>
 	<key>files2</key>
 	<dict>
+		<key>Resources/AppIcon.icns</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			Pfv2IlbfLzqdzgI6nVq/gAX4pyWDE2LDeuQ7xc/ukE8=
+			</data>
+		</dict>
+		<key>Resources/DevDeck_DevDeck.bundle/AppIcon.icns</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			Pfv2IlbfLzqdzgI6nVq/gAX4pyWDE2LDeuQ7xc/ukE8=
+			</data>
+		</dict>
 		<key>Resources/DevDeck_DevDeck.bundle/default_profiles.json</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			LtvkQpdbdrmi6BWKUltprp193wXuS4il7NuRy0o3KDQ=
+			TzrEpiw2E+K++xPOaEQjdxE1xbebaZ6nYPo9bj+ZtII=
 			</data>
 		</dict>
 	</dict>

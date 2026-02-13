@@ -32,16 +32,20 @@
         <section class="hero">
             <h1>The missing layer<br> of macOS.</h1>
             <p>Custom-mapped macros and tools, delivered through a beautiful, keyboard-first radial interface.</p>
-            <a href="https://github.com/shaf-m/devdeck/releases" class="cta-button" target="_blank"><i
-                    class="devicon-apple-original"></i> &nbsp; Download latest release</a>
+            <div class="cta-group">
+                <a href="https://github.com/shaf-m/devdeck/releases" class="cta-button primary" target="_blank"><i
+                        class="devicon-apple-original"></i> &nbsp; Download latest release</a>
+                <a href="#features" class="cta-button secondary">Learn More</a>
+            </div>
 
             <div class="visual-demo">
                 <!-- Abstract representation of the radial menu -->
-                <div class="visual-node" style="top: 20px; left: 50%; transform: translateX(-50%);"></div>
-                <div class="visual-node" style="bottom: 50px; left: 20px;"></div>
-                <div class="visual-node" style="bottom: 50px; right: 20px;"></div>
-                <div class="visual-node" style="top: 100px; right: -10px; width: 30px; height: 30px;"></div>
-                <div class="visual-node" style="top: 100px; left: -10px; width: 30px; height: 30px;"></div>
+                <div class="visual-concentric-circle"></div>
+                <div class="visual-node" style="--angle: 0deg;"></div>
+                <div class="visual-node" style="--angle: 72deg;"></div>
+                <div class="visual-node" style="--angle: 144deg;"></div>
+                <div class="visual-node" style="--angle: 216deg;"></div>
+                <div class="visual-node" style="--angle: 288deg;"></div>
 
                 <div class="visual-hub">
                     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
@@ -182,20 +186,25 @@
     </div>
 
     <script>
-        function reveal() {
-            var reveals = document.querySelectorAll(".reveal");
-            for (var i = 0; i < reveals.length; i++) {
-                var windowHeight = window.innerHeight;
-                var elementTop = reveals[i].getBoundingClientRect().top;
-                var elementVisible = 150;
-                if (elementTop < windowHeight - elementVisible) {
-                    reveals[i].classList.add("active");
+        // Intersection Observer for reveal elements
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target); // Stop observing once revealed
                 }
-            }
-        }
-        window.addEventListener("scroll", reveal);
-        // Trigger once on load
-        reveal();
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => {
+            observer.observe(el);
+        });
     </script>
 
 </body>

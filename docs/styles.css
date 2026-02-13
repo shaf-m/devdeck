@@ -63,6 +63,16 @@ body {
     }
 }
 
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .reveal {
     opacity: 0;
     transform: translateY(30px);
@@ -180,22 +190,39 @@ header {
     font-weight: 400;
 }
 
+.cta-group {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+}
+
 .cta-button {
     display: inline-block;
-    padding: 16px 40px;
-    background: linear-gradient(135deg, #007AFF, #AF52DE);
-    color: white;
-    text-decoration: none;
+    padding: 16px 32px;
     border-radius: 999px;
     font-weight: 700;
     font-size: 1.1rem;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 10px 30px -10px rgba(0, 122, 255, 0.5);
     position: relative;
     overflow: hidden;
+    text-decoration: none;
 }
 
-.cta-button::after {
+.cta-button.primary {
+    background: linear-gradient(135deg, #007AFF, #AF52DE);
+    color: white;
+    box-shadow: 0 10px 30px -10px rgba(0, 122, 255, 0.5);
+}
+
+.cta-button.secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.cta-button.primary::after {
     content: '';
     position: absolute;
     top: 0;
@@ -207,21 +234,30 @@ header {
 }
 
 .cta-button:hover {
-    transform: translateY(-3px) scale(1.02);
+    transform: translateY(-3px);
+}
+
+.cta-button.primary:hover {
     box-shadow: 0 20px 40px -10px rgba(175, 82, 222, 0.6);
 }
 
-.cta-button:hover::after {
+.cta-button.secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.cta-button.primary:hover::after {
     left: 100%;
 }
 
 /* Visual Representation (Radial Menu) */
+/* Visual Representation (Radial Menu) */
 .visual-demo {
     margin: 60px auto;
-    width: 300px;
-    height: 300px;
+    width: 320px;
+    height: 320px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--glass-border);
     backdrop-filter: blur(var(--glass-blur));
     position: relative;
@@ -232,31 +268,60 @@ header {
     animation: float 6s ease-in-out infinite;
 }
 
-.visual-hub {
-    width: 100px;
-    height: 100px;
+.visual-concentric-circle {
+    position: absolute;
+    width: 200px;
+    height: 200px;
     border-radius: 50%;
-    background: rgba(30, 30, 30, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    animation: rotate 60s linear infinite;
+}
+
+.visual-hub {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: rgba(30, 30, 30, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 40px rgba(0, 122, 255, 0.2);
     animation: pulse-glow 4s infinite;
+    z-index: 2;
 }
 
 .visual-node {
     position: absolute;
-    width: 40px;
-    height: 40px;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    margin-top: -22px;
+    margin-left: -22px;
     border-radius: 50%;
-    background: linear-gradient(135deg, rgba(0, 122, 255, 0.7), rgba(175, 82, 222, 0.7));
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.2), rgba(175, 82, 222, 0.2));
     border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* Calculate position based on angle */
+    transform: rotate(var(--angle)) translate(110px) rotate(calc(-1 * var(--angle)));
+}
+
+.visual-node::after {
+    content: '';
+    position: absolute;
+    inset: 10px;
+    border-radius: 50%;
+    background: white;
+    opacity: 0.1;
 }
 
 .visual-demo:hover .visual-node {
-    transform: scale(1.1);
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.8), rgba(175, 82, 222, 0.8));
+    box-shadow: 0 0 20px rgba(175, 82, 222, 0.4);
+    transform: rotate(var(--angle)) translate(120px) rotate(calc(-1 * var(--angle))) scale(1.1);
 }
 
 /* Features Grid */
@@ -400,6 +465,10 @@ footer a {
     animation: scroll 25s linear infinite;
 }
 
+.carousel-track:hover {
+    animation-play-state: paused;
+}
+
 .carousel-track i {
     font-size: 3rem;
     color: rgba(255, 255, 255, 0.5);
@@ -535,10 +604,16 @@ footer a {
         margin-bottom: 32px;
     }
 
+    .cta-group {
+        flex-direction: column;
+        gap: 12px;
+    }
+
     .cta-button {
         padding: 14px 32px;
         font-size: 1rem;
-        width: 100%;
+        width: auto;
+        min-width: 200px;
         box-sizing: border-box;
         text-align: center;
     }

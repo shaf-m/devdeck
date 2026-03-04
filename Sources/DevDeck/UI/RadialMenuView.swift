@@ -112,21 +112,30 @@ struct DeckClipboardRow: View {
                     .padding(.vertical, 6)
 
                 HStack(spacing: 10) {
-                    // Index badge
+                    // Index badge → copy icon on hover
                     ZStack {
                         Circle()
-                            .fill(isHovering ? Color(nsColor: .controlAccentColor).opacity(0.2) : Color.white.opacity(0.08))
+                            .fill(isHovering
+                                ? LinearGradient(colors: [Color(nsColor: .controlAccentColor), .purple],
+                                                 startPoint: .topLeading, endPoint: .bottomTrailing)
+                                : LinearGradient(colors: [Color.white.opacity(0.08), Color.white.opacity(0.08)],
+                                                 startPoint: .topLeading, endPoint: .bottomTrailing)
+                            )
                             .frame(width: 20, height: 20)
-                        Text("\(index + 1)")
-                            .font(.system(size: 9, weight: .bold, design: .monospaced))
-                            .foregroundColor(isHovering ? Color(nsColor: .controlAccentColor) : .secondary)
-                    }
 
-                    // Clipboard icon
-                    Image(systemName: "doc.on.clipboard")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(isHovering ? Color(nsColor: .controlAccentColor) : .secondary.opacity(0.6))
-                        .frame(width: 14)
+                        if isHovering {
+                            Image(systemName: "doc.on.clipboard")
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundColor(.white)
+                                .transition(.scale.combined(with: .opacity))
+                        } else {
+                            Text("\(index + 1)")
+                                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                .foregroundColor(.secondary)
+                                .transition(.scale.combined(with: .opacity))
+                        }
+                    }
+                    .animation(.easeOut(duration: 0.15), value: isHovering)
 
                     // Text preview
                     VStack(alignment: .leading, spacing: 2) {
@@ -150,16 +159,12 @@ struct DeckClipboardRow: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(
-                        isHovering
-                        ? Color(nsColor: .controlAccentColor).opacity(0.07)
-                        : Color.clear
-                    )
+                    .fill(isHovering ? Color.white.opacity(0.08) : Color.clear)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(
-                        isHovering ? Color(nsColor: .controlAccentColor).opacity(0.18) : Color.clear,
+                        isHovering ? Color.white.opacity(0.12) : Color.clear,
                         lineWidth: 0.6
                     )
             )
@@ -276,12 +281,6 @@ struct RadialMenuView: View {
                 .stroke(borderGradient, lineWidth: 1.0)
         )
         .clipShape(RoundedRectangle(cornerRadius: 20))
-        // Directional shadow: only downward so the top edge stays flush with the menu bar.
-        // radius=10, y=10 means ≤0pt bleed above the panel.
-        .shadow(color: .black.opacity(0.45), radius: 10, x: 0, y: 10)
-        // Extra bottom padding gives the window frame room for the shadow to render below.
-        // The window top sits flush at the menu bar; shadow above is clipped by the window edge.
-        .padding(.bottom, 20)
         // Copied-to-clipboard toast overlay
         .overlay(
             ZStack {
@@ -468,8 +467,8 @@ struct RadialMenuView: View {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 showCopiedToast = true
                             }
-                            // Fade the toast out after 2s — panel stays open
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                            // Fade the toast out after 1s — panel stays open
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                                 withAnimation(.easeOut(duration: 0.35)) {
                                     showCopiedToast = false
                                 }
@@ -547,7 +546,7 @@ private struct HistoryFooterButton: View {
             }
             .foregroundColor(isActive || isHovering ? .white : .secondary)
             .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .frame(height: 30)
             .background(
                 Capsule()
                     .fill(
@@ -613,7 +612,7 @@ private struct DevDeckFooterButton: View {
                     : AnyShapeStyle(Color.secondary.opacity(0.7))
                 )
                 .padding(.horizontal, 12)
-                .padding(.vertical, 6)   // matches HistoryFooterButton vertical padding
+                .frame(height: 30)
                 .background(
                     Capsule()
                         .fill(isHovering ? Color.white.opacity(0.09) : Color.clear)

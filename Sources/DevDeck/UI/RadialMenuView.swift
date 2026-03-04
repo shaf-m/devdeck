@@ -190,6 +190,7 @@ struct RadialMenuView: View {
     var onPaste: ((ClipboardItem) -> Void)? = nil
     var onClose: (() -> Void)? = nil
     var onOpenDashboard: (() -> Void)? = nil
+    var onResize: (() -> Void)? = nil
     // Legacy parameter kept for compatibility, unused in new layout
     var circlePadding: CGFloat = 20
     var showHistory: Bool = true
@@ -275,8 +276,12 @@ struct RadialMenuView: View {
                 .stroke(borderGradient, lineWidth: 1.0)
         )
         .clipShape(RoundedRectangle(cornerRadius: 20))
-        // System window shadow (hasShadow=true on NSPanel) handles the drop shadow
-        // without clipping — no SwiftUI .shadow() needed here.
+        // Directional shadow: only downward so the top edge stays flush with the menu bar.
+        // radius=10, y=10 means ≤0pt bleed above the panel.
+        .shadow(color: .black.opacity(0.45), radius: 10, x: 0, y: 10)
+        // Extra bottom padding gives the window frame room for the shadow to render below.
+        // The window top sits flush at the menu bar; shadow above is clipped by the window edge.
+        .padding(.bottom, 20)
         // Copied-to-clipboard toast overlay
         .overlay(
             ZStack {
@@ -315,6 +320,11 @@ struct RadialMenuView: View {
         .scaleEffect(isVisible ? 1 : 0.95)
         .opacity(isVisible ? 1 : 0)
         .animation(.spring(response: 0.3, dampingFraction: 0.75), value: isVisible)
+        .ignoresSafeArea()   // prevent SwiftUI from reserving space for the menu-bar safe area
+        .onChange(of: menuMode) { _ in
+            // Notify AppCoordinator so it can resize the window to the new content height.
+            onResize?()
+        }
         .onAppear {
             withAnimation { isVisible = true }
         }

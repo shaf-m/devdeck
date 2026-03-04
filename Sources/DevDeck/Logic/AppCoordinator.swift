@@ -15,6 +15,9 @@ class AppCoordinator: ObservableObject {
     private var shortcutMonitor: Any?
     private var menuBarManager: MenuBarManager?
     private var globalClickMonitor: Any?
+    private var hostingController: NSHostingController<RadialMenuView>?
+    /// Cursor location captured at the moment the overlay is shown — used for horizontal centering.
+    private var lastCursorLocation: NSPoint = .zero
     
     init() {
         // AppCoordinator is a root class conforming to ObservableObject, no super.init needed.
@@ -98,16 +101,47 @@ class AppCoordinator: ObservableObject {
                 if let url = URL(string: "devdeck://dashboard") {
                     NSWorkspace.shared.open(url)
                 }
+            },
+            onResize: { [weak self] in
+                // Fired when menuMode or profile changes — resize window to new content height
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    self?.resizeToContent()
+                }
             }
         )
-        let hostingView = NSHostingView(rootView: contentView)
-        hostingView.wantsLayer = true
-        hostingView.layer?.backgroundColor = NSColor.clear.cgColor
-        hostingView.sizingOptions = [.preferredContentSize]
-        window.contentView = hostingView
+        let controller = NSHostingController(rootView: contentView)
+        controller.view.wantsLayer = true
+        controller.view.layer?.backgroundColor = NSColor.clear.cgColor
+        window.contentViewController = controller
+        self.hostingController = controller
         self.overlayWindow = window
-        // Ensure it starts hidden
         window.orderOut(nil)
+    }
+
+    // MARK: - Window Sizing
+
+    /// Reads the SwiftUI fittingSize and snaps the window to it, then repositions flush at the menu bar.
+    private func resizeToContent() {
+        guard let window = overlayWindow, let controller = hostingController else { return }
+        let fitting = controller.view.fittingSize
+        guard fitting.height > 10 else { return }   // guard against zero during early layout
+        window.setContentSize(fitting)
+        repositionAtMenuBar()
+    }
+
+    private func repositionAtMenuBar() {
+        guard let window = overlayWindow else { return }
+        let windowSize = window.frame.size
+        let cursor = lastCursorLocation
+        let screen = NSScreen.screens.first(where: { NSMouseInRect(cursor, $0.frame, false) }) ?? NSScreen.main
+        if let screen {
+            let vf = screen.visibleFrame
+            // Top edge flush with the bottom of the menu bar
+            let y = vf.maxY - windowSize.height
+            // Horizontally centred on the cursor, clamped within the screen
+            let x = min(max(cursor.x - windowSize.width / 2, vf.minX), vf.maxX - windowSize.width)
+            window.setFrameOrigin(CGPoint(x: x, y: y))
+        }
     }
     
     func showOverlayManually() {
@@ -171,43 +205,23 @@ class AppCoordinator: ObservableObject {
     private func showOverlay() {
         guard let window = overlayWindow else { return }
 
-        let mouseLoc = NSEvent.mouseLocation
+        lastCursorLocation = NSEvent.mouseLocation
 
-        // Show offscreen first — this lets sizingOptions apply SwiftUI's real
-        // content height before we read window.frame.size for positioning.
+        // Place offscreen so SwiftUI can lay out before we read fittingSize.
         window.setFrameOrigin(NSPoint(x: -9999, y: 0))
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
 
-        // One run-loop later the window has been resized to its actual content.
+        // After one run-loop the view has been laid out and fittingSize is accurate.
         DispatchQueue.main.async { [weak self] in
-            guard let self, let window = self.overlayWindow else { return }
-
-            let windowSize = window.frame.size
-            let screen = NSScreen.screens.first(where: { NSMouseInRect(mouseLoc, $0.frame, false) })
-                ?? NSScreen.main
-
-            var origin = CGPoint(x: 0, y: 0)
-            if let screen {
-                let visibleFrame = screen.visibleFrame
-                // Anchor just below the menu bar (top of visible area)
-                let y = visibleFrame.maxY - windowSize.height
-                // Center horizontally on the cursor, clamped to screen edges
-                let x = min(
-                    max(mouseLoc.x - windowSize.width / 2, visibleFrame.minX),
-                    visibleFrame.maxX - windowSize.width
-                )
-                origin = CGPoint(x: x, y: y)
-            }
-
-            window.setFrameOrigin(origin)
-
+            self?.resizeToContent()
             // Dismiss when clicking outside the panel
-            self.globalClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+            self?.globalClickMonitor = NSEvent.addGlobalMonitorForEvents(
+                matching: [.leftMouseDown, .rightMouseDown]
+            ) { [weak self] _ in
                 self?.hideOverlay()
             }
         }
-
     }
     
     private func hideOverlay() {

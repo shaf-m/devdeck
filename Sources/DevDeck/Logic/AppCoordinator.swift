@@ -14,6 +14,7 @@ class AppCoordinator: ObservableObject {
     
     private var shortcutMonitor: Any?
     private var menuBarManager: MenuBarManager?
+    private var globalClickMonitor: Any?
     
     init() {
         // AppCoordinator is a root class conforming to ObservableObject, no super.init needed.
@@ -75,7 +76,7 @@ class AppCoordinator: ObservableObject {
     
     private func createWindow() {
         let window = OverlayWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 500, height: 500),
+            contentRect: NSRect(x: 0, y: 0, width: 370, height: 600),
             backing: .buffered,
             defer: false
         )
@@ -87,16 +88,22 @@ class AppCoordinator: ObservableObject {
                 self?.executeMacro(macro)
             },
             onPaste: { [weak self] item in
-                self?.handlePaste(item)
+                // Copy to clipboard only — the view handles the toast and keeps the panel open
+                self?.clipboardManager.copy(item)
             },
             onClose: { [weak self] in
                 self?.hideOverlay()
             },
-            circlePadding: 30
+            onOpenDashboard: {
+                if let url = URL(string: "devdeck://dashboard") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
         )
         let hostingView = NSHostingView(rootView: contentView)
         hostingView.wantsLayer = true
         hostingView.layer?.backgroundColor = NSColor.clear.cgColor
+        hostingView.sizingOptions = [.preferredContentSize]
         window.contentView = hostingView
         self.overlayWindow = window
         // Ensure it starts hidden
@@ -163,21 +170,51 @@ class AppCoordinator: ObservableObject {
     
     private func showOverlay() {
         guard let window = overlayWindow else { return }
-        
+
         let mouseLoc = NSEvent.mouseLocation
-        // Center window on mouse
-        let windowSize = window.frame.size
-        let origin = CGPoint(
-            x: mouseLoc.x - windowSize.width / 2,
-            y: mouseLoc.y - windowSize.height / 2
-        )
-        
-        window.setFrameOrigin(origin)
+
+        // Show offscreen first — this lets sizingOptions apply SwiftUI's real
+        // content height before we read window.frame.size for positioning.
+        window.setFrameOrigin(NSPoint(x: -9999, y: 0))
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+
+        // One run-loop later the window has been resized to its actual content.
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let window = self.overlayWindow else { return }
+
+            let windowSize = window.frame.size
+            let screen = NSScreen.screens.first(where: { NSMouseInRect(mouseLoc, $0.frame, false) })
+                ?? NSScreen.main
+
+            var origin = CGPoint(x: 0, y: 0)
+            if let screen {
+                let visibleFrame = screen.visibleFrame
+                // Anchor just below the menu bar (top of visible area)
+                let y = visibleFrame.maxY - windowSize.height
+                // Center horizontally on the cursor, clamped to screen edges
+                let x = min(
+                    max(mouseLoc.x - windowSize.width / 2, visibleFrame.minX),
+                    visibleFrame.maxX - windowSize.width
+                )
+                origin = CGPoint(x: x, y: y)
+            }
+
+            window.setFrameOrigin(origin)
+
+            // Dismiss when clicking outside the panel
+            self.globalClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+                self?.hideOverlay()
+            }
+        }
+
     }
     
     private func hideOverlay() {
         overlayWindow?.orderOut(nil)
+        if let monitor = globalClickMonitor {
+            NSEvent.removeMonitor(monitor)
+            globalClickMonitor = nil
+        }
     }
 }

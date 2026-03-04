@@ -13,7 +13,7 @@ class OverlayWindow: NSPanel {
         // Critical Transparency Settings
         self.backgroundColor = .clear
         self.isOpaque = false
-        self.hasShadow = false
+        self.hasShadow = true
         self.titlebarAppearsTransparent = true
         self.titleVisibility = .hidden
         

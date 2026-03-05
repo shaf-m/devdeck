@@ -17,10 +17,14 @@ class MenuBarManager: NSObject {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
         if let button = statusItem.button {
-            // Load the real app icon and scale it to standard menu-bar height (18pt)
-            let icon: NSImage = (NSImage(named: NSImage.applicationIconName)?.copy() as? NSImage)
-                ?? NSApp.applicationIconImage
-            icon.size = NSSize(width: 18, height: 18)
+            // Draw into a brand-new NSImage — never mutate the shared applicationIconImage,
+            // which would corrupt the Dock/Finder icon system-wide.
+            let barSize = NSSize(width: 18, height: 18)
+            let source: NSImage = NSImage(named: NSImage.applicationIconName) ?? NSApp.applicationIconImage
+            let icon = NSImage(size: barSize)
+            icon.lockFocus()
+            source.draw(in: NSRect(origin: .zero, size: barSize))
+            icon.unlockFocus()
             button.image = icon
             button.action = #selector(statusBarClicked(_:))
             button.target = self

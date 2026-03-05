@@ -234,7 +234,7 @@ struct MacroManagerView: View {
                             .frame(width: 480, height: 480)
                         
                         // Screen
-                        RadialMenuView(profileManager: profileManager, clipboardManager: clipboardManager, previewProfile: profile, onExecute: { _ in }, circlePadding: 5, showHistory: false)
+                        DeckPanelView(profileManager: profileManager, clipboardManager: clipboardManager, previewProfile: profile, onExecute: { _ in }, circlePadding: 5, showHistory: false)
                             .frame(width: 450, height: 450)
                             .scaleEffect(0.85)
                             .background(Color.clear)

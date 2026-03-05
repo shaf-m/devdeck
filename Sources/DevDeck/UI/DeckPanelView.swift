@@ -185,9 +185,9 @@ struct DeckClipboardRow: View {
 }
 
 
-// MARK: - RadialMenuView (Deck Panel)
+// MARK: - DeckPanelView
 
-struct RadialMenuView: View {
+struct DeckPanelView: View {
     @ObservedObject var profileManager: ProfileManager
     @ObservedObject var clipboardManager: ClipboardHistoryManager
     var previewProfile: Profile? = nil

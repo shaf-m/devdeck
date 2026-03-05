@@ -15,7 +15,7 @@ class AppCoordinator: ObservableObject {
     private var shortcutMonitor: Any?
     private var menuBarManager: MenuBarManager?
     private var globalClickMonitor: Any?
-    private var hostingController: NSHostingController<RadialMenuView>?
+    private var hostingController: NSHostingController<DeckPanelView>?
     /// Cursor location captured at the moment the overlay is shown — used for horizontal centering.
     private var lastCursorLocation: NSPoint = .zero
     
@@ -84,7 +84,7 @@ class AppCoordinator: ObservableObject {
             defer: false
         )
         
-        let contentView = RadialMenuView(
+        let contentView = DeckPanelView(
             profileManager: profileManager,
             clipboardManager: clipboardManager,
             onExecute: { [weak self] macro in

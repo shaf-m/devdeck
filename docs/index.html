@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" type='text/css' href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
     <meta name="description"
-        content="DevDeck is a powerful radial menu overlay for macOS, streamlining your workflow with macros, clipboard history, and more.">
+        content="DevDeck is a powerful macro overlay for macOS, delivering a glassmorphic deck panel with macros, clipboard history, and context-aware profiles.">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 
@@ -31,8 +31,9 @@
         </header>
 
         <section class="hero">
-            <h1>The missing layer<br> of macOS.</h1>
-            <p>Custom-mapped macros and tools, delivered through a beautiful, keyboard-first radial interface.</p>
+            <h1>The missing layer<br>of macOS.</h1>
+            <p>Custom-mapped macros and tools, delivered through a beautiful <strong>deck panel</strong> that lives at
+                your fingertips.</p>
             <div class="cta-group">
                 <a href="https://github.com/shaf-m/devdeck/releases/download/v1.1/DevDeck.dmg"
                     class="cta-button primary"><i class="devicon-apple-original"></i> &nbsp; Download .dmg</a>
@@ -42,20 +43,27 @@
             </div>
 
             <div class="visual-demo">
-                <!-- Abstract representation of the radial menu -->
-                <div class="visual-concentric-circle"></div>
-                <div class="visual-node" style="--angle: 0deg;"></div>
-                <div class="visual-node" style="--angle: 72deg;"></div>
-                <div class="visual-node" style="--angle: 144deg;"></div>
-                <div class="visual-node" style="--angle: 216deg;"></div>
-                <div class="visual-node" style="--angle: 288deg;"></div>
-
-                <div class="visual-hub">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                    </svg>
+                <!-- Abstract representation of the deck panel -->
+                <div class="visual-panel">
+                    <div class="visual-panel-header">
+                        <div class="visual-panel-dot" style="background: var(--accent);"></div>
+                        <div class="visual-panel-title">Global &nbsp;<span style="opacity:.5;font-size:10px;">7
+                                macros</span></div>
+                        <div class="visual-panel-dot" style="background: rgba(255,255,255,.15); margin-left:auto;">
+                        </div>
+                    </div>
+                    <div class="visual-panel-grid">
+                        <div class="visual-macro-card"></div>
+                        <div class="visual-macro-card"></div>
+                        <div class="visual-macro-card"></div>
+                        <div class="visual-macro-card"></div>
+                        <div class="visual-macro-card"></div>
+                        <div class="visual-macro-card"></div>
+                    </div>
+                    <div class="visual-panel-footer">
+                        <div class="visual-footer-pill history">History</div>
+                        <div class="visual-footer-pill devdeck">&lt;DevDeck&gt;</div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -130,7 +138,8 @@
             <div class="feature-card reveal" style="--delay: 100ms;">
                 <div class="feature-icon">📋</div>
                 <h3>Clipboard History</h3>
-                <p>Never lose a copied snippet again. Access your clipboard history directly from the radial menu.</p>
+                <p>Never lose a copied snippet again. Access your full clipboard history directly from the deck panel.
+                </p>
             </div>
             <div class="feature-card reveal" style="--delay: 200ms;">
                 <div class="feature-icon">✨</div>
@@ -175,8 +184,8 @@
                     <div class="step-icon">∞</div>
                     <div class="step-number">03</div>
                     <h3>Flow</h3>
-                    <p>Trigger the menu anywhere. Hold down the trigger key or tap the icon in the menu bar to open the
-                        menu. Move your mouse to a node to execute a macro instantly.</p>
+                    <p>Trigger the deck panel anywhere with a long-press of the tilde key or a click on the menu bar
+                        icon. Execute macros, paste clipboard history, and stay in the zone.</p>
                 </div>
             </div>
         </section>

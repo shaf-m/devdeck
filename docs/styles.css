@@ -250,78 +250,100 @@ header {
     left: 100%;
 }
 
-/* Visual Representation (Radial Menu) */
-/* Visual Representation (Radial Menu) */
+/* Visual Representation (Deck Panel) */
 .visual-demo {
     margin: 60px auto;
     width: 320px;
-    height: 320px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(var(--glass-blur));
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     animation: float 6s ease-in-out infinite;
 }
 
-.visual-concentric-circle {
-    position: absolute;
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    border: 1px dashed rgba(255, 255, 255, 0.1);
-    animation: rotate 60s linear infinite;
+.visual-panel {
+    background: rgba(20, 20, 28, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
-.visual-hub {
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    background: rgba(30, 30, 30, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+.visual-panel-header {
     display: flex;
-    justify-content: center;
     align-items: center;
-    box-shadow: 0 0 40px rgba(0, 122, 255, 0.2);
-    animation: pulse-glow 4s infinite;
-    z-index: 2;
+    gap: 8px;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    font-size: 11px;
+    font-weight: 700;
+    font-family: SFMono-Regular, monospace;
+    color: rgba(255, 255, 255, 0.85);
 }
 
-.visual-node {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 44px;
-    height: 44px;
-    margin-top: -22px;
-    margin-left: -22px;
+.visual-panel-dot {
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
-    background: linear-gradient(135deg, rgba(0, 122, 255, 0.2), rgba(175, 82, 222, 0.2));
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(5px);
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-
-    /* Calculate position based on angle */
-    transform: rotate(var(--angle)) translate(110px) rotate(calc(-1 * var(--angle)));
+    flex-shrink: 0;
 }
 
-.visual-node::after {
-    content: '';
-    position: absolute;
-    inset: 10px;
-    border-radius: 50%;
-    background: white;
-    opacity: 0.1;
+.visual-panel-title {
+    flex: 1;
 }
 
-.visual-demo:hover .visual-node {
-    background: linear-gradient(135deg, rgba(0, 122, 255, 0.8), rgba(175, 82, 222, 0.8));
-    box-shadow: 0 0 20px rgba(175, 82, 222, 0.4);
-    transform: rotate(var(--angle)) translate(120px) rotate(calc(-1 * var(--angle))) scale(1.1);
+.visual-panel-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 16px;
+}
+
+.visual-macro-card {
+    height: 64px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.35), rgba(175, 82, 222, 0.35));
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+}
+
+.visual-macro-card:hover {
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.75), rgba(175, 82, 222, 0.75));
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 6px 20px rgba(175, 82, 222, 0.45);
+    transform: translateY(-3px) scale(1.05);
+}
+
+/* Dim non-hovered siblings for focus */
+.visual-panel-grid:has(.visual-macro-card:hover) .visual-macro-card:not(:hover) {
+    opacity: 0.55;
+    transform: scale(0.97);
+}
+
+.visual-panel-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    gap: 8px;
+}
+
+.visual-footer-pill {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: SFMono-Regular, monospace;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.visual-footer-pill.history {
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.7), rgba(175, 82, 222, 0.7));
+    color: white;
+}
+
+.visual-footer-pill.devdeck {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.6);
 }
 
 /* Features Grid */
@@ -618,21 +640,10 @@ footer a {
         text-align: center;
     }
 
-    /* Visual Demo (Radial Menu) */
+    /* Visual Demo (Deck Panel) */
     .visual-demo {
-        width: 260px;
-        height: 260px;
+        width: 240px;
         margin: 40px auto;
-    }
-
-    .visual-hub {
-        width: 80px;
-        height: 80px;
-    }
-
-    .visual-node {
-        width: 32px;
-        height: 32px;
     }
 
     /* Features Grid */

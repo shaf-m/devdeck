@@ -20,8 +20,8 @@ struct OnboardingView: View {
                     case 1:
                         ConceptPage(
                             title: "The Overlay",
-                            description: "Hold the tilde ~ key or click the menu bar icon to peek at your shortcuts. Use the radial menu for quick access.",
-                            imageName: "circle.circle",
+                            description: "Hold the tilde ~ key or click the menu bar icon to open the deck panel for quick access to all your shortcuts.",
+                            imageName: "square.stack.3d.up.fill",
                             color: .blue
                         )
                     case 2:
@@ -144,7 +144,7 @@ struct WelcomePage: View {
                 .font(.title2)
                 .foregroundColor(.secondary)
             
-            Text("Streamline your workflow with context-aware shortcuts and a powerful radial menu.")
+            Text("Streamline your workflow with context-aware shortcuts and a powerful deck panel.")
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
                 .foregroundColor(.secondary)

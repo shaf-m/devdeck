@@ -9,7 +9,7 @@ struct HelpView: View {
         case gettingStarted
         case creatingMacros
         case contextSwitching
-        case radialMenu
+        case deckPanel
         case menuBarIcon
         case troubleshooting
         
@@ -20,7 +20,7 @@ struct HelpView: View {
             case .gettingStarted: return "Getting Started"
             case .creatingMacros: return "Creating Macros"
             case .contextSwitching: return "Context Switching"
-            case .radialMenu: return "The Radial Menu"
+            case .deckPanel: return "The Deck Panel"
             case .menuBarIcon: return "Menu Bar Icon"
             case .troubleshooting: return "Overlay Not Showing?"
             }
@@ -31,7 +31,7 @@ struct HelpView: View {
             case .gettingStarted: return "flag.circle.fill"
             case .creatingMacros: return "plus.square.fill"
             case .contextSwitching: return "arrow.triangle.2.circlepath.circle.fill"
-            case .radialMenu: return "circle.circle.fill"
+            case .deckPanel: return "square.stack.3d.up.fill"
             case .menuBarIcon: return "menubar.rectangle"
             case .troubleshooting: return "exclamationmark.triangle.fill"
             }
@@ -42,7 +42,7 @@ struct HelpView: View {
             case .gettingStarted: return .orange
             case .creatingMacros: return .green
             case .contextSwitching: return .blue
-            case .radialMenu: return .purple
+            case .deckPanel: return .purple
             case .menuBarIcon: return .gray
             case .troubleshooting: return .yellow
             }
@@ -65,8 +65,8 @@ struct HelpView: View {
                     NavigationLink(value: HelpTopic.contextSwitching) {
                         Label(HelpTopic.contextSwitching.title, systemImage: "arrow.triangle.2.circlepath")
                     }
-                    NavigationLink(value: HelpTopic.radialMenu) {
-                        Label(HelpTopic.radialMenu.title, systemImage: "circle.circle")
+                    NavigationLink(value: HelpTopic.deckPanel) {
+                        Label(HelpTopic.deckPanel.title, systemImage: "square.stack.3d.up")
                     }
                     NavigationLink(value: HelpTopic.menuBarIcon) {
                         Label(HelpTopic.menuBarIcon.title, systemImage: "menubar.rectangle")
@@ -128,12 +128,12 @@ struct HelpView: View {
                         color: selection.color,
                         content: "DevDeck detects the active window.\n\nYou can link profiles to specific applications by adding their names in the Profile Details view.\n\nWhen you switch focus to that app, DevDeck automatically activates the corresponding profile."
                     )
-                case .radialMenu:
+                case .deckPanel:
                     TutorialDetailView(
                         title: selection.title,
                         icon: selection.icon,
                         color: selection.color,
-                        content: "The overlay window appears when you trigger it (Long press the tilde ~ key).\n\nUse your mouse to hover over items towards the edges of the circle to select them. Click any macro in the swatch to execute it."
+                        content: "The overlay appears as a **glassmorphic vertical panel** anchored just below the macOS menu bar.\n\nTrigger it by long-pressing the tilde `~` key or by left-clicking the menu bar icon.\n\n**Macro Grid**: Your macros are arranged in a numbered 3-column grid. Click any card to execute it instantly.\n\n**Clipboard History**: Tap the **History** button in the footer to switch to your clipboard history. Hover over an item and click to copy it back to the clipboard.\n\n**Cycling Profiles**: Use the ↻ button in the header to cycle through your profiles."
                     )
                 case .menuBarIcon:
                     TutorialDetailView(

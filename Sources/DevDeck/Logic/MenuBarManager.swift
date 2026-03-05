@@ -17,19 +17,47 @@ class MenuBarManager: NSObject {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
         if let button = statusItem.button {
-            // Draw into a brand-new NSImage — never mutate the shared applicationIconImage,
-            // which would corrupt the Dock/Finder icon system-wide.
-            let barSize = NSSize(width: 18, height: 18)
-            let source: NSImage = NSImage(named: NSImage.applicationIconName) ?? NSApp.applicationIconImage
-            let icon = NSImage(size: barSize)
-            icon.lockFocus()
-            source.draw(in: NSRect(origin: .zero, size: barSize))
-            icon.unlockFocus()
-            button.image = icon
+            button.image = makeMenuBarIcon()
             button.action = #selector(statusBarClicked(_:))
             button.target = self
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
+    }
+
+    /// Renders the app icon into a fresh 18×18 image using CGContext,
+    /// which works without a screen drawing context (safe at app launch).
+    private func makeMenuBarIcon() -> NSImage {
+        let pt: Int = 18
+        let scale: Int = 2                     // render at 2× for clarity on Retina
+        let px = pt * scale
+
+        // Load source — never touch NSApp.applicationIconImage directly
+        guard let source = NSImage(named: NSImage.applicationIconName),
+              let cgSource = source.cgImage(forProposedRect: nil, context: nil, hints: nil)
+        else {
+            // Safe fallback: use an SF Symbol template (never corrupts)
+            return NSImage(systemSymbolName: "square.stack.3d.up.fill",
+                           accessibilityDescription: "DevDeck")
+                   ?? NSImage()
+        }
+
+        let colorSpace  = CGColorSpaceCreateDeviceRGB()
+        let bitmapInfo  = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue)
+
+        guard let ctx = CGContext(data: nil,
+                                  width: px, height: px,
+                                  bitsPerComponent: 8,
+                                  bytesPerRow: 0,
+                                  space: colorSpace,
+                                  bitmapInfo: bitmapInfo.rawValue),
+              let result = { ctx.draw(cgSource, in: CGRect(x: 0, y: 0, width: px, height: px)); return ctx.makeImage() }()
+        else {
+            return NSImage(systemSymbolName: "square.stack.3d.up.fill",
+                           accessibilityDescription: "DevDeck") ?? NSImage()
+        }
+
+        let icon = NSImage(cgImage: result, size: NSSize(width: pt, height: pt))
+        return icon
     }
     
     private func setupMenu() {

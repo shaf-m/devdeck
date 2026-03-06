@@ -8,7 +8,7 @@
 ![Platform](https://img.shields.io/badge/platform-macOS%2013.0%2B-lightgrey.svg)
 ![Swift](https://img.shields.io/badge/Swift-5.7-orange.svg)
 
-**DevDeck** is a high-performance, native macOS productivity tool designed for developers and power users. It provides instant access to context-aware macros and a universal snippet library through an intuitive, aesthetic radial menu.
+**DevDeck** is a high-performance, native macOS productivity tool designed for developers and power users. It provides instant access to context-aware macros and a universal snippet library through an intuitive, aesthetic menu.
 
 [Download Latest Release](https://github.com/shaf-m/devdeck/releases)
 

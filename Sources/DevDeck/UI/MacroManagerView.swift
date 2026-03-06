@@ -6,6 +6,7 @@ struct MacroManagerView: View {
     @State private var selectedProfile: Profile?
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @State private var showHelp = false
+    @State private var showSettings = false
     
 
     
@@ -61,17 +62,30 @@ struct MacroManagerView: View {
                 .padding(.top, 8)
                 
                 List(selection: $selectedProfile) {
-                    ForEach(profileManager.profiles) { profile in
-                        NavigationLink(value: profile) {
-                            HStack {
-                                Image(systemName: "folder.fill")
-                                    .foregroundColor(.blue)
-                                Text(profile.name)
-                                    .fontWeight(profile.name == "Global" ? .bold : .regular)
+                    Section("Profiles") {
+                        ForEach(profileManager.profiles) { profile in
+                            NavigationLink(value: profile) {
+                                HStack {
+                                    Image(systemName: "folder.fill")
+                                        .foregroundColor(.blue)
+                                    Text(profile.name)
+                                        .fontWeight(profile.name == "Global" ? .bold : .regular)
+                                }
                             }
                         }
+                        .onDelete(perform: confirmDeleteProfile)
                     }
-                    .onDelete(perform: confirmDeleteProfile)
+
+                    Section("General") {
+                        Button {
+                            selectedProfile = nil
+                            showSettings = true
+                        } label: {
+                            Label("Settings", systemImage: "gear")
+                                .foregroundColor(showSettings ? .accentColor : .primary)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
                 .navigationSplitViewColumnWidth(min: 260, ideal: 300, max: 400)
             }
@@ -95,7 +109,9 @@ struct MacroManagerView: View {
         } detail: {
             // MAIN CANVAS
             VStack(spacing: 0) {
-                if let selected = selectedProfile,
+                if showSettings {
+                    SettingsDetailView()
+                } else if let selected = selectedProfile,
                    let index = profileManager.profiles.firstIndex(where: { $0.id == selected.id }) {
                     profileDetailView(index: index)
                 } else {
@@ -151,6 +167,10 @@ struct MacroManagerView: View {
         }
         .sheet(isPresented: $showHelp) {
             HelpView()
+        }
+        // Clear Settings when a profile is selected
+        .onChange(of: selectedProfile) { _ in
+            if selectedProfile != nil { showSettings = false }
         }
         .sheet(isPresented: Binding(
             get: { !hasCompletedOnboarding },

@@ -9,22 +9,36 @@ struct DashboardView: View {
     @State private var showNewProfileAlert = false
     @State private var newProfileName = ""
     @State private var showHelp = false
+    @State private var showSettings = false
     
     var body: some View {
         NavigationSplitView {
             List(selection: $selectedProfile) {
-                ForEach(profileManager.profiles) { profile in
-                    NavigationLink(value: profile) {
-                        HStack {
-                            Image(systemName: "folder.fill")
-                                .foregroundColor(.blue)
-                            Text(profile.name)
-                                .fontWeight(profile.name == "Global" ? .bold : .regular)
+                Section(header: Text("Profiles")) {
+                    ForEach(profileManager.profiles) { profile in
+                        NavigationLink(value: profile) {
+                            HStack {
+                                Image(systemName: "folder.fill")
+                                    .foregroundColor(.blue)
+                                Text(profile.name)
+                                    .fontWeight(profile.name == "Global" ? .bold : .regular)
+                            }
                         }
                     }
+                    .onDelete { indexSet in
+                        deleteProfiles(at: indexSet)
+                    }
                 }
-                .onDelete { indexSet in
-                    deleteProfiles(at: indexSet)
+
+                Section(header: Text("General")) {
+                    Button {
+                        selectedProfile = nil
+                        showSettings = true
+                    } label: {
+                        Label("Settings", systemImage: "gear")
+                            .foregroundColor(showSettings ? .accentColor : .primary)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
             .navigationTitle("Profiles")
@@ -47,7 +61,9 @@ struct DashboardView: View {
                 }
             }
         } detail: {
-            if let profile = selectedProfile {
+            if showSettings {
+                SettingsDetailView()
+            } else if let profile = selectedProfile {
                 ProfileDetailView(profile: profile, profileManager: profileManager)
             } else {
                 VStack(spacing: 20) {
@@ -65,6 +81,10 @@ struct DashboardView: View {
             }
         }
         .frame(minWidth: 700, minHeight: 500)
+        // When a profile is selected in the sidebar, dismiss the Settings pane
+        .onChange(of: selectedProfile) { _ in
+            if selectedProfile != nil { showSettings = false }
+        }
         .sheet(isPresented: $showHelp) {
             HelpView()
         }
@@ -303,3 +323,108 @@ struct MacroEditorView: View {
         }
     }
 }
+
+// MARK: - Settings Detail View
+
+struct SettingsDetailView: View {
+    @AppStorage("historyLimit")    private var historyLimit: Int    = 10
+    @AppStorage("tileSize")       private var tileSize: Double     = 46
+    @AppStorage("macroFontSize")  private var macroFontSize: Double = 10
+    @AppStorage("showMacroLabels") private var showMacroLabels: Bool = true
+
+    var body: some View {
+        Form {
+            // ── Deck Panel ──────────────────────────────────────────────
+            Section {
+                settingsRow(
+                    label: "Tile size",
+                    value: "\(Int(tileSize)) pt"
+                ) {
+                    Slider(value: $tileSize, in: 38...58, step: 1)
+                        .tint(.accentColor)
+                }
+
+                settingsRow(
+                    label: "Label font size",
+                    value: "\(Int(macroFontSize)) pt"
+                ) {
+                    Slider(value: $macroFontSize, in: 8...13, step: 0.5)
+                        .tint(.accentColor)
+                }
+
+                Toggle("Show macro labels", isOn: $showMacroLabels)
+            } header: {
+                Text("Deck Panel")
+            }
+
+            // ── Clipboard History ───────────────────────────────────────
+            Section {
+                settingsRow(
+                    label: "History limit",
+                    value: "\(historyLimit) items"
+                ) {
+                    Slider(
+                        value: Binding(
+                            get: { Double(historyLimit) },
+                            set: { historyLimit = Int($0) }
+                        ),
+                        in: 1...20, step: 1
+                    )
+                    .tint(.accentColor)
+                }
+                Text("Maximum clipboard entries kept in memory. Older items are trimmed automatically.")
+                    .font(.caption).foregroundColor(.secondary)
+            } header: {
+                Text("Clipboard History")
+            }
+
+            // ── About ───────────────────────────────────────────────────
+            Section {
+                Link(destination: URL(string: "https://github.com/shaf-m/devdeck")!) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "curlybraces.square.fill")
+                            .font(.system(size: 18))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [.primary, .secondary],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("View on GitHub")
+                                .fontWeight(.medium)
+                            Text("github.com/shaf-m/devdeck")
+                                .font(.caption).foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "arrow.up.right")
+                            .font(.caption).foregroundColor(.secondary)
+                    }
+                }
+                .buttonStyle(.plain)
+            } header: {
+                Text("About")
+            }
+        }
+        .formStyle(.grouped)
+        .navigationTitle("Settings")
+        .frame(minWidth: 420)
+    }
+
+    /// Reusable row: label on left, current value + control on right.
+    @ViewBuilder
+    private func settingsRow(label: String, value: String, @ViewBuilder control: () -> some View) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(label)
+                Spacer()
+                Text(value)
+                    .foregroundColor(.secondary)
+                    .monospacedDigit()
+            }
+            control()
+        }
+    }
+}
+

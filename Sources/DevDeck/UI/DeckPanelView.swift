@@ -24,6 +24,10 @@ struct DeckMacroCard: View {
     @State private var isHovering = false
     @State private var isPressed = false
 
+    @AppStorage("tileSize")        private var tileSize: Double      = 46
+    @AppStorage("macroFontSize")   private var macroFontSize: Double = 10
+    @AppStorage("showMacroLabels") private var showMacroLabels: Bool = true
+
     /// Resolve the tile gradient colours from macro.iconColor or fall back to accent→purple.
     private var tileColors: [Color] {
         if let hex = macro.iconColor, let base = Color(hex: hex) {
@@ -48,7 +52,7 @@ struct DeckMacroCard: View {
                 ZStack(alignment: .topTrailing) {
                     // Icon tile
                     ZStack {
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: max(8, tileSize * 0.22))
                             .fill(
                                 LinearGradient(
                                     colors: tileColors,
@@ -56,18 +60,18 @@ struct DeckMacroCard: View {
                                     endPoint: .bottomTrailing
                                 )
                             )
-                            .frame(width: 46, height: 46)
+                            .frame(width: tileSize, height: tileSize)
                             .shadow(
                                 color: isHovering ? glowColor : .clear,
                                 radius: 10
                             )
 
                         Image(systemName: macro.iconName ?? "bolt.fill")
-                            .font(.system(size: 20, weight: .semibold))
+                            .font(.system(size: tileSize * 0.43, weight: .semibold))
                             .foregroundColor(.white)
                     }
                     .overlay(
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: max(8, tileSize * 0.22))
                             .stroke(.white.opacity(isHovering ? 0.4 : 0.15), lineWidth: 0.8)
                     )
 
@@ -83,12 +87,14 @@ struct DeckMacroCard: View {
                     .offset(x: 6, y: -6)
                 }
 
-                // Label
-                Text(macro.label)
-                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                    .foregroundColor(.primary.opacity(0.85))
-                    .lineLimit(1)
-                    .frame(maxWidth: 80)
+                // Label — hidden when showMacroLabels is false
+                if showMacroLabels {
+                    Text(macro.label)
+                        .font(.system(size: macroFontSize, weight: .semibold, design: .monospaced))
+                        .foregroundColor(.primary.opacity(0.85))
+                        .lineLimit(1)
+                        .frame(maxWidth: tileSize + 34)
+                }
             }
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity)
@@ -232,6 +238,8 @@ struct DeckPanelView: View {
     @State private var errorMessage: String?
     @State private var showError: Bool = false
     @State private var showCopiedToast = false
+    @State private var showClearConfirm = false
+    @State private var isHoveringClear = false
 
     enum MenuMode {
         case main
@@ -475,40 +483,89 @@ struct DeckPanelView: View {
     // MARK: - History Content
 
     private var historyContent: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 2) {
-                if clipboardManager.history.isEmpty {
-                    VStack(spacing: 8) {
-                        Image(systemName: "doc.on.clipboard")
-                            .font(.system(size: 28))
-                            .foregroundColor(.secondary.opacity(0.5))
-                        Text("No clipboard history")
-                            .font(.system(size: 12, design: .monospaced))
-                            .foregroundColor(.secondary)
+        VStack(spacing: 0) {
+            // History sub-header with Clear All
+            if !clipboardManager.history.isEmpty {
+                HStack {
+                    Text("\(clipboardManager.history.count) item\(clipboardManager.history.count == 1 ? "" : "s")")
+                        .font(.system(size: 10, design: .monospaced))
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Button {
+                        showClearConfirm = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "trash")
+                            Text("Clear All")
+                        }
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(isHoveringClear ? .red : .red.opacity(0.55))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(isHoveringClear
+                                      ? Color.red.opacity(0.15)
+                                      : Color.clear)
+                        )
+                        .animation(.easeOut(duration: 0.15), value: isHoveringClear)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 32)
-                } else {
-                    ForEach(Array(clipboardManager.history.enumerated()), id: \.element.id) { index, item in
-                        DeckClipboardRow(item: item, index: index) {
-                            onPaste?(item)
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                showCopiedToast = true
-                            }
-                            // Fade the toast out after 1s — panel stays open
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                                withAnimation(.easeOut(duration: 0.35)) {
-                                    showCopiedToast = false
+                    .buttonStyle(.plain)
+                    .onHover { isHoveringClear = $0 }
+                    .confirmationDialog(
+                        "Clear clipboard history?",
+                        isPresented: $showClearConfirm,
+                        titleVisibility: .visible
+                    ) {
+                        Button("Clear All", role: .destructive) {
+                            clipboardManager.clearAll()
+                        }
+                        Button("Cancel", role: .cancel) {}
+                    } message: {
+                        Text("This will remove all \(clipboardManager.history.count) items from your clipboard history.")
+                    }
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
+            }
+
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 2) {
+                    if clipboardManager.history.isEmpty {
+                        VStack(spacing: 8) {
+                            Image(systemName: "doc.on.clipboard")
+                                .font(.system(size: 28))
+                                .foregroundColor(.secondary.opacity(0.5))
+                            Text("No clipboard history")
+                                .font(.system(size: 12, design: .monospaced))
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 32)
+                    } else {
+                        ForEach(Array(clipboardManager.history.enumerated()), id: \.element.id) { index, item in
+                            DeckClipboardRow(item: item, index: index) {
+                                onPaste?(item)
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    showCopiedToast = true
+                                }
+                                // Fade the toast out after 1s — panel stays open
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                    withAnimation(.easeOut(duration: 0.35)) {
+                                        showCopiedToast = false
+                                    }
                                 }
                             }
                         }
                     }
                 }
+                .padding(.horizontal, 6)
+                .padding(.top, clipboardManager.history.isEmpty ? 0 : 4)
+                .padding(.bottom, 10)
             }
-            .padding(.horizontal, 6)
-            .padding(.vertical, 10)
+            .frame(maxHeight: 280)
         }
-        .frame(maxHeight: 280)
     }
 
     // MARK: - Footer Bar

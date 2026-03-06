@@ -1,5 +1,19 @@
 import SwiftUI
 
+// MARK: - Color helpers
+
+extension Color {
+    /// Initialise from a hex string like "#FF6B6B" or "FF6B6B".
+    init?(hex: String) {
+        let hex = hex.trimmingCharacters(in: .init(charactersIn: "#"))
+        guard hex.count == 6, let value = UInt64(hex, radix: 16) else { return nil }
+        let r = Double((value >> 16) & 0xFF) / 255
+        let g = Double((value >> 8)  & 0xFF) / 255
+        let b = Double( value        & 0xFF) / 255
+        self.init(red: r, green: g, blue: b)
+    }
+}
+
 // MARK: - DeckMacroCard
 
 struct DeckMacroCard: View {
@@ -10,6 +24,24 @@ struct DeckMacroCard: View {
     @State private var isHovering = false
     @State private var isPressed = false
 
+    /// Resolve the tile gradient colours from macro.iconColor or fall back to accent→purple.
+    private var tileColors: [Color] {
+        if let hex = macro.iconColor, let base = Color(hex: hex) {
+            return [base.opacity(0.85), base.opacity(0.6)]
+        }
+        return [
+            Color(nsColor: .controlAccentColor).opacity(0.75),
+            Color.purple.opacity(0.65)
+        ]
+    }
+
+    private var glowColor: Color {
+        if let hex = macro.iconColor, let base = Color(hex: hex) {
+            return base.opacity(0.55)
+        }
+        return Color(nsColor: .controlAccentColor).opacity(0.55)
+    }
+
     var body: some View {
         Button(action: action) {
             VStack(spacing: 7) {
@@ -19,19 +51,14 @@ struct DeckMacroCard: View {
                         RoundedRectangle(cornerRadius: 10)
                             .fill(
                                 LinearGradient(
-                                    colors: [
-                                        Color(nsColor: .controlAccentColor).opacity(0.75),
-                                        Color.purple.opacity(0.65)
-                                    ],
+                                    colors: tileColors,
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
                             )
                             .frame(width: 46, height: 46)
                             .shadow(
-                                color: isHovering
-                                    ? Color(nsColor: .controlAccentColor).opacity(0.55)
-                                    : .clear,
+                                color: isHovering ? glowColor : .clear,
                                 radius: 10
                             )
 
@@ -316,9 +343,10 @@ struct DeckPanelView: View {
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: showCopiedToast)
             .allowsHitTesting(false)
         )
-        .scaleEffect(isVisible ? 1 : 0.95)
+        .scaleEffect(isVisible ? 1 : 0.97)
         .opacity(isVisible ? 1 : 0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.75), value: isVisible)
+        .offset(y: isVisible ? 0 : -10)   // slide down from menu bar
+        .animation(.spring(response: 0.32, dampingFraction: 0.78), value: isVisible)
         .ignoresSafeArea()   // prevent SwiftUI from reserving space for the menu-bar safe area
         .onChange(of: menuMode) { _ in
             // Notify AppCoordinator so it can resize the window to the new content height.

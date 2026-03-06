@@ -14,6 +14,8 @@ struct Macro: Codable, Identifiable, Equatable, Hashable {
     var type: MacroType
     var value: String
     var iconName: String?
+    /// Hex colour string e.g. "#FF6B6B". Nil = default accent→purple gradient.
+    var iconColor: String?
     var pressEnter: Bool = false
     
     // ... (rest of implementation)

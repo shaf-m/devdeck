@@ -26,11 +26,30 @@ struct SnippetCreationView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Create New Snippet")
-                .font(.title2)
-                .bold()
-                .padding(.top, 10)
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Text("Create New Snippet")
+                    .font(.title2)
+                    .bold()
+                
+                Spacer()
+                
+                Button(action: {
+                    dismiss()
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.secondary.opacity(0.8))
+                }
+                .buttonStyle(.plain)
+                .keyboardShortcut(.cancelAction)
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 16)
+            .background(Color(NSColor.windowBackgroundColor).opacity(0.3))
+            
+            Divider()
             
             HStack(alignment: .top, spacing: 20) {
                 // Left Column: Details
@@ -79,9 +98,18 @@ struct SnippetCreationView: View {
                 
                 // Right Column: Code
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Code")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
+                    HStack {
+                        Text("Code")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        if !code.isEmpty {
+                            Text("\(code.components(separatedBy: .newlines).count) lines  ·  \(code.count) chars")
+                                .font(.caption)
+                                .foregroundColor(.secondary.opacity(0.6))
+                                .monospacedDigit()
+                        }
+                    }
                     
                     CodeEditorView(
                         text: $code,
@@ -103,17 +131,43 @@ struct SnippetCreationView: View {
             HStack(spacing: 16) {
                 Spacer()
                 
-                Button("Cancel") {
-                    dismiss()
+                Button(action: { dismiss() }) {
+                    Text("Cancel")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(Color(NSColor.controlBackgroundColor))
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
+                        )
                 }
+                .buttonStyle(.plain)
                 .keyboardShortcut(.cancelAction)
                 
-                Button("Create Snippet") {
-                    saveSnippet()
+                Button(action: { saveSnippet() }) {
+                    Text("Create Snippet")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 10)
+                        .background(
+                            LinearGradient(
+                                colors: name.isEmpty || code.isEmpty ? [.gray.opacity(0.5), .gray.opacity(0.3)] : [.blue, .purple],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(10)
+                        .shadow(color: .black.opacity(name.isEmpty || code.isEmpty ? 0 : 0.1), radius: 3, x: 0, y: 1)
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.plain)
                 .disabled(name.isEmpty || code.isEmpty)
                 .keyboardShortcut(.defaultAction)
+                .keyboardShortcut(.return, modifiers: .command)
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor))

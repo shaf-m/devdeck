@@ -37,25 +37,50 @@ struct SnippetDetailView: View {
         _notes = State(initialValue: snippet.notes)
     }
     
+    /// Returns true when any field differs from the saved snippet.
+    private var hasUnsavedChanges: Bool {
+        name != snippet.name || language != snippet.language || code != snippet.content || notes != snippet.notes
+    }
+
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 0) {
+            // Header
             HStack {
-                Text("Edit Snippet")
-                    .font(.title2)
-                    .bold()
+                HStack(spacing: 6) {
+                    Text("Edit Snippet")
+                        .font(.title2)
+                        .bold()
+                    if hasUnsavedChanges {
+                        HStack(spacing: 4) {
+                            Text("•")
+                                .foregroundColor(.orange)
+                            Text("unsaved changes")
+                                .font(.caption2)
+                                .fontWeight(.medium)
+                                .foregroundColor(.orange.opacity(0.8))
+                        }
+                        .transition(.scale.combined(with: .opacity))
+                    }
+                }
+                .animation(.easeInOut(duration: 0.2), value: hasUnsavedChanges)
+
                 Spacer()
-                
+
                 Button(action: {
                     dismiss()
                 }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title2)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.secondary.opacity(0.8))
                 }
                 .buttonStyle(.plain)
                 .keyboardShortcut(.cancelAction)
             }
-            .padding([.top, .horizontal])
+            .padding(.horizontal, 24)
+            .padding(.vertical, 16)
+            .background(Color(NSColor.windowBackgroundColor).opacity(0.3))
+            
+            Divider()
             
             HStack(alignment: .top, spacing: 20) {
                 // Left Column: Details
@@ -104,10 +129,21 @@ struct SnippetDetailView: View {
                 
                 // Right Column: Code
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Code")
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-                    
+                    HStack {
+                        Text("Code")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        if !code.isEmpty {
+                            let lineCount = code.components(separatedBy: .newlines).count
+                            let charCount = code.count
+                            Text("\(lineCount) lines  ·  \(charCount) chars")
+                                .font(.caption)
+                                .foregroundColor(.secondary.opacity(0.6))
+                                .monospacedDigit()
+                        }
+                    }
+
                     CodeEditorView(
                         text: $code,
                         language: language
@@ -133,20 +169,47 @@ struct SnippetDetailView: View {
                 }
                 .buttonStyle(.plain)
                 .foregroundColor(.red)
+                .padding(.horizontal, 12)
                 
                 Spacer()
                 
-                Button("Cancel") {
-                    dismiss()
+                Button(action: { dismiss() }) {
+                    Text("Cancel")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(Color(NSColor.controlBackgroundColor))
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
+                        )
                 }
+                .buttonStyle(.plain)
                 .keyboardShortcut(.cancelAction)
                 
-                Button("Save Changes") {
-                    saveChanges()
+                Button(action: { saveChanges() }) {
+                    Text("Save Changes")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 10)
+                        .background(
+                            LinearGradient(
+                                colors: name.isEmpty || code.isEmpty ? [.gray.opacity(0.5), .gray.opacity(0.3)] : [.blue, .purple],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(10)
+                        .shadow(color: .black.opacity(name.isEmpty || code.isEmpty ? 0 : 0.1), radius: 3, x: 0, y: 1)
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.plain)
                 .disabled(name.isEmpty || code.isEmpty)
-                .keyboardShortcut("s", modifiers: .command) // Cmd+S for Save
+                .keyboardShortcut("s", modifiers: .command) // Cmd+S
+                .keyboardShortcut(.return, modifiers: .command) // Cmd+Return
             }
             .padding()
             .background(Color(NSColor.controlBackgroundColor))

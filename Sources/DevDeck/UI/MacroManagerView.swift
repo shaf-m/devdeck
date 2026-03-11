@@ -32,6 +32,9 @@ struct MacroManagerView: View {
     // New Macro Tracking
     @State private var newMacroID: UUID?
     
+    // Live Preview State
+    @AppStorage("showLivePreview") private var showLivePreview = true
+    
     // Helper to get app name
     func nameForBundleId(_ bundleId: String) -> String {
         if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleId) {
@@ -231,35 +234,95 @@ struct MacroManagerView: View {
         ScrollView {
             VStack(spacing: 24) {
                 // 1. TOP SECTION: LIVE PREVIEW
-                VStack(spacing: 8) {
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("Live Preview")
-                                .font(.title3)
-                                .bold()
-                            Text("Interact with the radial menu to test navigation")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                VStack(spacing: 0) {
+                    Button(action: { withAnimation { showLivePreview.toggle() } }) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack(spacing: 6) {
+                                    Text("Live Preview")
+                                        .font(.headline)
+                                    Image(systemName: showLivePreview ? "chevron.up" : "chevron.down")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
+                                if !showLivePreview {
+                                    Text("Show DevDeck preview")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            Spacer()
                         }
-                        Spacer()
+                        .padding(.horizontal)
+                        .padding(.vertical, 12)
+                        .contentShape(Rectangle())
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 20)
+                    .buttonStyle(.plain)
                     
-                    ZStack {
-                        // Deck Bezel
-                        RoundedRectangle(cornerRadius: 30)
-                            .fill(Color(NSColor.windowBackgroundColor))
-                            .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
-                            .frame(width: 480, height: 480)
-                        
-                        // Screen
-                        DeckPanelView(profileManager: profileManager, clipboardManager: clipboardManager, previewProfile: profile, onExecute: { _ in }, circlePadding: 5, showHistory: false)
-                            .frame(width: 450, height: 450)
-                            .scaleEffect(0.85)
-                            .background(Color.clear)
+                    if showLivePreview {
+                        VStack(spacing: 8) {
+                            ZStack(alignment: .bottom) {
+                                // Deck Bezel
+                                RoundedRectangle(cornerRadius: 30)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                Color(NSColor.windowBackgroundColor),
+                                                Color(NSColor.windowBackgroundColor).opacity(0.8)
+                                            ],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .overlay(
+                                        RadialGradient(
+                                            colors: [.blue.opacity(0.12), .purple.opacity(0.12), .clear],
+                                            center: .topLeading,
+                                            startRadius: 0,
+                                            endRadius: 450
+                                        )
+                                        .blendMode(.plusLighter)
+                                        .cornerRadius(30)
+                                    )
+                                    .shadow(color: Color.black.opacity(0.15), radius: 12, x: 0, y: 6)
+                                    .frame(width: 440, height: 440)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 30)
+                                            .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
+                                    )
+                                
+                                // Screen
+                                DeckPanelView(profileManager: profileManager, clipboardManager: clipboardManager, previewProfile: profile, onExecute: { _ in }, circlePadding: 5, showHistory: false)
+                                    .frame(width: 410, height: 410)
+                                    .scaleEffect(0.82)
+                                    .background(Color.clear)
+                                
+                                // Profile Badge Overlaid on bottom of Bezel
+                                Text(profile.name)
+                                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 4)
+                                    .background(
+                                        Capsule()
+                                            .fill(LinearGradient(colors: [.blue, .purple], startPoint: .leading, endPoint: .trailing))
+                                    )
+                                    .shadow(radius: 2)
+                                    .offset(y: 12)
+                            }
+                            .padding(.top, 10)
+                            .padding(.bottom, 25)
+                            
+                            HStack(spacing: 4) {
+                                Image(systemName: "info.circle")
+                                Text("Preview mode: interactive menu without execution")
+                            }
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(.secondary.opacity(0.7))
+                            .padding(.bottom, 20)
+                        }
+                        .transition(.move(edge: .top).combined(with: .opacity))
                     }
-                    .padding()
                 }
                 
                 Divider()
@@ -299,12 +362,14 @@ struct MacroManagerView: View {
                                 .font(.headline)
                                 .fontWeight(.medium)
                             
-                            Button(action: { isEditingProfileName = true }) {
-                                Image(systemName: "pencil")
-                                    .foregroundColor(.secondary)
+                            if profileManager.profiles[index].name != "Global" {
+                                Button(action: { isEditingProfileName = true }) {
+                                    Image(systemName: "pencil")
+                                        .foregroundColor(.secondary)
+                                }
+                                .buttonStyle(.plain)
+                                .help("Rename Profile")
                             }
-                            .buttonStyle(.plain)
-                            .help("Rename Profile")
                         }
                     }
                 }
@@ -702,8 +767,15 @@ struct MacroManagerView: View {
     }
     
     private func confirmDeleteProfile(at offsets: IndexSet) {
-        profileToDeleteIndex = offsets
-        showProfileDeleteConfirmation = true
+        // Filter out "Global" profile from deletion offsets
+        let filteredOffsets = offsets.filter { index in
+            profileManager.profiles[index].name != "Global"
+        }
+        
+        if !filteredOffsets.isEmpty {
+            profileToDeleteIndex = IndexSet(filteredOffsets)
+            showProfileDeleteConfirmation = true
+        }
     }
     
     private func deleteProfile() {
